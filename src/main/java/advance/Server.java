@@ -1,3 +1,4 @@
+package advance;
 import com.sun.net.httpserver.*;
 import java.net.*;
 import java.io.*;
@@ -9,13 +10,13 @@ public class Server {
     public Server(int port){
         this.port = port;
         try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
+            this.server = HttpServer.create(new InetSocketAddress(port), 0);
         }catch(IOException e){
             System.out.println("Error creating server: " + e);
         }
     }
     public void addController(String url, Controller controller){
-        server.createContext(url, controller);
+        this.server.createContext(url, controller);
         controller.rules = setParams(url);
     }
     private Param[] setParams(String format){
@@ -49,6 +50,7 @@ public class Server {
         }
     }
     public void listen(){
-        server.start();
+        this.server.setExecutor(null);
+        this.server.start();
     }
 }

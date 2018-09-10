@@ -1,23 +1,26 @@
-package io.github.isaackrementsov.kokosole.framework;
-import java.net.*;
-import java.io.*;
+package advance;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
-import java.net.URLDecoder;
 import com.sun.net.httpserver.*;
 public abstract class Controller implements HttpHandler {
-    HashMap<String, Object> data = new HashMap<>();
-    HashMap<String, String> params = new HashMap<>();
-    HashMap<String, String> query = new HashMap<>();
-    HashMap<String, Object> session = new HashMap<>();
-    int responseCode = 200;
-    int responseLength = 0;
-    Server.Param[] rules;
-    OutputStream res;
+    public int responseCode = 200;
+    public byte[] response = {};
+    public HashMap<String, Object> data = new HashMap<>();
+    public HashMap<String, String> params = new HashMap<>();
+    public HashMap<String, String> query = new HashMap<>();
+    public HashMap<String, Object> session = new HashMap<>();
+    public HashMap<String, String> headerEdits = new HashMap<>();
+    public Server.Param[] rules;
+    private OutputStream res;
     private ArrayList<HashMap<String, Object>> sessionStore = new ArrayList<>();
+    private int sessIndex = -1;
     public Controller(){
         this.data = null;
     }
@@ -27,7 +30,12 @@ public abstract class Controller implements HttpHandler {
     private void parseQuery(URI url){
         HashMap<String, String> queryPairs = new HashMap<String, String>();
         String query = url.getQuery();
-        String[] pairs = query.split("&");
+        String[] pairs;
+        if(query == null){
+            pairs = new String[]{};
+        }else{
+            pairs = query.split("&");
+        }
         for(String pair : pairs) {
             int i = pair.indexOf("=");
             try {
@@ -54,29 +62,40 @@ public abstract class Controller implements HttpHandler {
         this.params = paramsToParse;
     }
     private String getSID(List<String> cookies){
-        int index = IntStream.range(0, cookies.size())
-            .filter(i -> cookies.get(i).contains("SID"))
-                .findFirst()
-                    .orElse(-1);
-        if(index == -1){
+        if(cookies == null){
             return null;
         }else{
-            return cookies.get(index).split("=")[1];
+            int index = IntStream.range(0, cookies.size())
+                .filter(i -> cookies.get(i).contains("SID"))
+                    .findFirst()
+                        .orElse(-1);
+            if(index == -1){
+                return null;
+            }else{
+                return cookies.get(index).split("=")[1];
+            }
         }
     }
-    private HttpExchange getSession(HttpExchange he){
+    private void saveSession(){
+        if(this.sessIndex == -1){
+            sessionStore.add(this.session);
+        }else{
+            sessionStore.add(sessIndex, this.session);
+        }
+    }
+    private void getSession(HttpExchange he){
         Headers reqHeaders = he.getRequestHeaders();
         List<String> cookies = reqHeaders.get("Cookie");
-        String sid = getSID(cookies);
+        String sid = this.getSID(cookies);
         HashMap<String, Object> sessionDoc;
         if(sid == null){
             sessionDoc = new HashMap<>();
             String uuid = UUID.randomUUID().toString();
             sessionDoc.put("SID", uuid);
-            reqHeaders.set("Set-Cookie", "SID=" + uuid);
+            this.headerEdits.put("Set-Cookie", uuid);
         }else{
-            sessionDoc = sessionStore.get(IntStream.range(0, sessionStore.size())
-                .filter(i -> sessionStore.get(i).get("SID").equals(sid))
+            sessionDoc = this.sessionStore.get(IntStream.range(0, sessionStore.size())
+                .filter(i -> this.sessionStore.get(i).get("SID").equals(sid))
                     .findFirst()
                         .orElse(-1));
             if(sessionDoc == null){
@@ -85,47 +104,63 @@ public abstract class Controller implements HttpHandler {
             }
         }
         this.session = sessionDoc;
-        return he;
     }
     public void handle(HttpExchange he){
-        res = he.getResponseBody();
+        this.res = he.getResponseBody();
         String method = he.getRequestMethod();
         URI url = he.getRequestURI();
-        parseParams(url);
-        parseQuery(url); 
-        he = getSession(he);
+        this.parseParams(url);
+        this.parseQuery(url); 
+        this.getSession(he);
         try {
             switch(method){
                 case "GET":
                     this.get(he);
+                    break;
                 case "POST":
                     this.post(he);
+                    break;
                 case "PUT":
                     this.put(he);
+                    break;
                 case "PATCH":
                     this.patch(he);
+                    break;
                 case "DELETE":
                     this.delete(he);
-            }   
-            he.sendResponseHeaders(responseCode, responseLength);
+                    break;
+            }
+            saveSession();
+            Headers resHeaders = he.getResponseHeaders();
+            for(String key : this.headerEdits.keySet()){
+                resHeaders.set(key, this.headerEdits.get(key));
+            }
+            he.sendResponseHeaders(this.responseCode, this.response.length);
+            this.res.write(this.response);
+            this.res.flush();
+            this.res.close();
         }catch(Exception e){
             System.out.println("Controller exception: " + e);
         }
-    
     }
     public void get(HttpExchange he) throws Exception {
-        responseCode = 405;
+        this.responseCode = 405;
+        this.response = "Method not allowed".getBytes();
     }
     public void post(HttpExchange he) throws Exception { 
-        responseCode = 405;
+        this.responseCode = 405;
+        this.response = "Method not allowed".getBytes();
     } 
     public void put(HttpExchange he) throws Exception { 
-        responseCode = 405;
+        this.responseCode = 405;
+        this.response = "Method not allowed".getBytes();
     }
     public void patch(HttpExchange he) throws Exception { 
-        responseCode = 405;
+        this.responseCode = 405;
+        this.response = "Method not allowed".getBytes();
     } 
     public void delete(HttpExchange he) throws Exception { 
-        responseCode = 405;
+        this.responseCode = 405;
+        this.response = "Method not allowed".getBytes();
     }
 }
