@@ -2,6 +2,7 @@ package advance;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,10 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import com.sun.net.httpserver.*;
+import freemarker.template.*;
 public abstract class Controller implements HttpHandler {
+    public String contentType = "text/html";
+    public String root;
+    public String viewDir;
     public int responseCode = 200;
     public byte[] response = {};
+    public Configuration config;
     public HttpExchange rawExchange;
+    public boolean overrideSendHeaders = false;
     public boolean overrideWrite = false;
     public boolean overrideHeaders = false;
     public boolean overrideClose = false;
@@ -113,8 +120,6 @@ public abstract class Controller implements HttpHandler {
             }
             br.close();
             isr.close();
-            System.out.println(sb);
-            System.out.println(sb.toString());
             HashMap<String, String> requestBody = separateQuery(sb.toString());
             this.body = requestBody;
         }catch(IOException ioe){
@@ -170,11 +175,14 @@ public abstract class Controller implements HttpHandler {
             saveSession();
             if(!this.overrideHeaders){
                 Headers resHeaders = he.getResponseHeaders();
+                resHeaders.set("Content-Type", contentType);
                 for(String key : this.headerEdits.keySet()){
                     resHeaders.set(key, this.headerEdits.get(key));
                 }
+            }   
+            if(!this.overrideSendHeaders){
                 he.sendResponseHeaders(this.responseCode, this.response.length);
-            }            
+            }
             if(!this.overrideWrite){
                 this.res.write(this.response);
             }
@@ -185,6 +193,30 @@ public abstract class Controller implements HttpHandler {
         }catch(Exception e){
             System.out.println("Controller exception: " + e);
         }
+        this.overrideHeaders = false;
+        this.overrideSendHeaders = false;
+        this.overrideClose = false;
+        this.overrideWrite = false;
+        this.contentType = "text/html";
+        this.headerEdits = null;
+        this.sessIndex = -1;
+    }
+    public void render(String filename, Object tData){
+        if(config != null){
+            try{
+                this.overrideSendHeaders = true;
+                Template temp = config.getTemplate(filename + ".ftlh");
+                OutputStreamWriter ow = new OutputStreamWriter(this.res);
+                this.rawExchange.sendResponseHeaders(responseCode, 0);
+                temp.process(tData, ow);
+            }catch(Exception e){
+                System.out.println("Render error: " + e);
+            }
+        }
+    }
+    public void redirect(String url, int code){
+        this.responseCode = code;
+        this.headerEdits.put("Location", url);
     }
     public void get() throws Exception {
         this.responseCode = 405;

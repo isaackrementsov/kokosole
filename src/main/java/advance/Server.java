@@ -4,25 +4,37 @@ import java.net.*;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Arrays;
+import freemarker.template.*;
 public class Server {
     public int port;
-    private HttpServer server = null;
-    public Server(int port){
+    public Configuration config;
+    private String root;
+    private HttpServer server;
+    public String viewDir;
+    public Server(int port, String root){
         this.port = port;
+        this.root = root;
         try {
             this.server = HttpServer.create(new InetSocketAddress(port), 0);
         }catch(IOException e){
             System.out.println("Error creating server:  " + e);
         }
     }
+    public void setViewDir(String viewDir){
+        this.viewDir = viewDir;
+        this.config = this.configureTemplating();
+    }
     public void addController(String url, Controller controller){
         this.server.createContext(url, controller);
-        controller.rules = setParams(url);
+        controller.rules = this.setParams(url);
+        controller.root = this.root;
+        controller.viewDir = this.viewDir;
+        controller.config = this.config;
     }
-    public void addStaticController(String url, String root){
+    public void addStaticController(String url){
         StaticController staticController = new StaticController();
         this.addController(url, staticController);
-        staticController.root = root;
+        staticController.root = this.root;
     }
     private Param[] setParams(String format){
         Param[] params = new Param[format.split(":").length - 1];
@@ -45,6 +57,20 @@ public class Server {
             i++;
         }
         return params;
+    }
+    private Configuration configureTemplating(){
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
+        try{
+            cfg.setDirectoryForTemplateLoading(new File(this.root + this.viewDir));
+            cfg.setDefaultEncoding("UTF-8");
+            cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            cfg.setLogTemplateExceptions(false);
+            cfg.setWrapUncheckedExceptions(true);
+        }catch(IOException ioe){
+            System.out.println("Template configuration failed " + ioe);
+            System.out.println("Is Apache Freemarker installed?");
+        }
+        return cfg;
     }
     public static class Param {
         int start;
