@@ -17,6 +17,7 @@ public class StaticController extends Controller {
             super.overrideSendHeaders = true;
             super.overrideWrite = true;
             super.overrideHeaders = true;
+            super.overrideClose = true;
             super.headerEdits.put("Content-Type", mime);
             super.rawExchange.sendResponseHeaders(responseCode, response.length);
             FileInputStream fis = new FileInputStream(file);
@@ -26,6 +27,7 @@ public class StaticController extends Controller {
                 super.res.write(buffer, 0, i);
             }
             fis.close();
+            super.res.close();
         }else{
             super.response = "404 (Not Found)\n".getBytes();
             super.responseCode = 404;
