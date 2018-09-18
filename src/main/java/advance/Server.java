@@ -8,9 +8,10 @@ import freemarker.template.*;
 public class Server {
     public int port;
     public Configuration config;
+    public String viewDir;
+    public static SessionStore sessionStore = new DefaultStore();
     private String root;
     private HttpServer server;
-    public String viewDir;
     public Server(int port, String root){
         this.port = port;
         this.root = root;

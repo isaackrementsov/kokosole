@@ -79,13 +79,6 @@ public abstract class Controller implements HttpHandler {
             }
         }
     }
-    private void saveSession(){
-        if(this.sessIndex == -1){
-            sessionStore.add(this.session);
-        }else{
-            sessionStore.add(sessIndex, this.session);
-        }
-    }
     private void getSession(HttpExchange he){
         Headers reqHeaders = he.getRequestHeaders();
         List<String> cookies = reqHeaders.get("Cookie");
@@ -97,10 +90,7 @@ public abstract class Controller implements HttpHandler {
             sessionDoc.put("SID", uuid);
             this.headerEdits.put("Set-Cookie", uuid);
         }else{
-            sessionDoc = this.sessionStore.get(IntStream.range(0, sessionStore.size())
-                .filter(i -> this.sessionStore.get(i).get("SID").equals(sid))
-                    .findFirst()
-                        .orElse(-1));
+            sessionDoc = Server.sessionStore.get(sid);
             if(sessionDoc == null){
                 sessionDoc = new HashMap<>();
                 sessionDoc.put("SID", sid);
@@ -172,7 +162,7 @@ public abstract class Controller implements HttpHandler {
                     this.delete();
                     break;
             }
-            saveSession();
+            Server.sessionStore.set(session.get("SID").toString(), session);
             if(!this.overrideHeaders){
                 Headers resHeaders = he.getResponseHeaders();
                 resHeaders.set("Content-Type", contentType);
