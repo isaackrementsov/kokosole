@@ -1,4 +1,245 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Nanum+Gothic|Tajawal:200,300,400');
 body, html {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Tajawal', sans-serif;
+    margin: 0;
+    background-color: whitesmoke;
+}
+h1 {
+    font-size: 2vw;
+}
+.navbar {
+    top: 0;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    list-style-type: none;
+    background-color: white;
+    width: 95%;
+    padding: 1vh 2.5%;
+}
+a {
+    color: inherit;
+    text-decoration: none;
+}
+.navbar .navlink {
+    display: block;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 1px;
+    color: #e66465;
+    font-size: 1.2vw;
+    font-weight: bold;
+    text-decoration: none;
+    margin-top: 0.5vh;
+    padding: 0.7vh 1.2vw;
+}
+.navbar a {
+    transition: 0.2s ease-in;
+}
+.navbar a:hover {
+    color: #F76D6E;
+}
+.outline {
+    border-style: solid !important;
+    border-color: #e66465 !important;
+    border-width: 1px !important;
+    border-radius: 5px;
+}
+.outline:hover {
+    background-color: #e66465;
+    color: white !important;
+}
+.navbar h1 {
+    margin: 0;
+}
+.navbar svg {
+    width: 3vw;
+}
+.navbar li {
+    margin: 1vh 0.5vw;
+    float: right;
+    color: #e66465;
+}
+.navbar .left {
+    float: left !important;
+}
+.important {
+    font-weight: bold;
+    font-size: 3vw;
+}
+.side {
+    display: inline-block;
+    vertical-align: top;
+    width: 48vw;
+}
+.side svg {
+    margin-left: 10vw;
+    margin-top: 6vh;
+    width: 30vw;
+    -webkit-filter: drop-shadow(12px 12px 7px rgba(50,50,50,0.07));      
+    filter: drop-shadow(12px 12px 7px rgba(50,50,50,0.07));  
+}
+.info {
+    margin-top: 7vh;
+    text-align: left;
+}
+.info h1, .info p {
+    width: 40vw;
+}
+.info p {
+    margin-bottom: 8vh;
+}
+p {
+    font-size: 1.5vw;
+}
+.button {
+    border-style: hidden;
+    border-radius: 3px;
+    text-decoration: none;
+    color: #e66465;
+    background-color: white;
+    padding: 1.7vh 2.7vw;
+    font-size: 1.2vw;
+    font-weight: bold;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.05);
+    transition: 0.2s ease-in-out;
+}
+.button:hover {
+    color: white;
+    background-color: #e66465;
+}
+.cta {
+    color: white !important;
+    background-color: #e66465;
+}
+.no-shadow {
+    box-shadow: none !important;
+}
+.no-shadow:hover {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.05) !important;
+}
+.register, .login {
+    box-shadow: 0 4px 8px 0 rgba(50, 50, 50, 0.1), 0 6px 20px 0 rgba(50, 50, 50, 0.05) !important;
+    padding: 3vh 3vw;
+    border-style: hidden;
+    border-radius: 10px;
+    background-color: white;
+    text-align: left;
+}
+.register {
+    width: 25vw;
+}
+.login {
+    width: 20vw;
+}
+.register *, .login * {
+    display: block;
+    left: 0;
+}
+.register * {
+    margin: 2vh 0;
+}
+.login * {
+    margin: 3vh 0;
+}
+.register input {
+    width: 96%;
+}
+.login input[type="text"], .login input[type="password"], .login input[type="email"] {
+    width: 96%;
+    font-size: 1.2vw;
+    padding: 2vh 1.7vw;
+}
+.login label {
+    font-size: 1.3vw;
+}
+input[type="text"], input[type="password"], input[type="email"]{
+    padding: 1.5vh 1vw;
+    border-style: solid;
+    border-color: lightgrey;
+    border-radius: 3px;
+    border-width: 1px;
+    font-size: 0.9vw;
+}
+label {
+    font-size: 1vw;
+    color: rgb(110, 110, 110);
+}
+input:focus, button:focus {
+    outline: none;
+}
+input:focus {
+    border-color: rgb(110, 114, 219);
+}
+.center {
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+}
+.center * {
+    margin-right: auto;
+    margin-left: auto;
+}
+.light {
+    font-weight: 300;
+}
+.normal {
+    font-weight: 400;
+}
+.form form {
+    margin-right: 2vw;
+}
+h3 {
+    color: rgb(110, 110, 110);
+    font-size: 1.2vw;
+}
+.writing {
+    text-align: left;
+    padding-left: 2vw;
+}
+.writing * {
+    max-width: 46vw;
+}
+.writing p {
+    font-size: 1vw;
+    width: 20vw;
+    margin-left: 1.1vw;
+    color: darkgrey;
+    display: inline-block;
+    margin-bottom: 0.5vh;
+    margin-top: 0.5vh;
+}
+.writing i {
+    color: darkgrey;
+    font-size: 1.3vw;
+}
+i {
+    display: inline;
+}
+.title {
+    margin-bottom: 0;
+    margin-top: 6vh;
+}
+.subtitle {
+    margin-top: 0.2vh;
+    margin-bottom: 6vh;
+    color: rgb(110, 110, 110);
+    font-weight: 400;
+    font-size: 1.5vw;
+}
+.main svg {
+    width: 5vw;
+    margin: 5vh auto;
+}
+.bar {
+    width: 100%;
+    height: 1vh;
+    background: linear-gradient(45deg, #e66465, #9198e5);
+}
+.smaller {
+    border-radius: 30px;
+}
+a.button {
+    max-width: 3.5vw;
+    text-align: center;
 }

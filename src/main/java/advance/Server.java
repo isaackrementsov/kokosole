@@ -26,16 +26,17 @@ public class Server {
         this.config = this.configureTemplating();
     }
     public void addController(String url, Controller controller){
-        this.server.createContext(url, controller);
         controller.rules = this.setParams(url);
         controller.root = this.root;
         controller.viewDir = this.viewDir;
         controller.config = this.config;
+        url = url.split(":")[0];
+        this.server.createContext(url, controller);
     }
     public void addStaticController(String url){
         StaticController staticController = new StaticController();
-        this.addController(url, staticController);
         staticController.root = this.root;
+        this.addController(url, staticController);
     }
     private Param[] setParams(String format){
         Param[] params = new Param[format.split(":").length - 1];

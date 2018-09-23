@@ -12,30 +12,29 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 import com.sun.net.httpserver.*;
 import freemarker.template.*;
 public abstract class Controller implements HttpHandler {
-    public String contentType = "text/html";
-    public String root;
-    public String viewDir;
-    public int responseCode = 200;
-    public byte[] response = {};
-    public Configuration config;
-    public HttpExchange rawExchange;
-    public boolean overrideSendHeaders = false;
-    public boolean overrideWrite = false;
-    public boolean overrideHeaders = false;
-    public boolean overrideClose = false;
-    public HashMap<String, String> body;
-    public HashMap<String, Object> data;
-    public HashMap<String, String> params;
-    public HashMap<String, String> query;
-    public HashMap<String, Object> session;
-    public HashMap<String, String> headerEdits;
     public Server.Param[] rules;
     public OutputStream res;
-    private ArrayList<HashMap<String, Object>> sessionStore = new ArrayList<>();
+    public Configuration config;
+    protected String contentType = "text/html";
+    protected String root;
+    protected String viewDir;
+    protected int responseCode = 200;
+    protected byte[] response = {};
+    protected HttpExchange rawExchange;
+    protected boolean overrideSendHeaders = false;
+    protected boolean overrideWrite = false;
+    protected boolean overrideHeaders = false;
+    protected boolean overrideClose = false;
+    protected HashMap<String, String> body;
+    protected HashMap<String, Object> data;
+    protected HashMap<String, String> params;
+    protected HashMap<String, String> query;
+    protected HashMap<String, Object> session;
+    protected HashMap<String, String> headerEdits;
+    protected boolean setSession = true;
     private int sessIndex = -1;
     public Controller(){
         this.data = null;
@@ -60,7 +59,7 @@ public abstract class Controller implements HttpHandler {
             }else{
                 end = slashIndex + p.start;
             }
-            paramsToParse.put(p.name, url.substring(p.start, end));
+            paramsToParse.put(p.name.split(":")[1], url.substring(p.start, end));
         }
         this.params = paramsToParse;
     }
@@ -68,10 +67,12 @@ public abstract class Controller implements HttpHandler {
         if(cookies == null){
             return null;
         }else{
-            int index = IntStream.range(0, cookies.size())
-                .filter(i -> cookies.get(i).contains("SID"))
-                    .findFirst()
-                        .orElse(-1);
+            int index = -1;
+            for(int i = 0; i < cookies.size(); i++){
+                if(cookies.get(i).contains("SID")){
+                    index = i;
+                }
+            }
             if(index == -1){
                 return null;
             }else{
@@ -88,7 +89,7 @@ public abstract class Controller implements HttpHandler {
             sessionDoc = new HashMap<>();
             String uuid = UUID.randomUUID().toString();
             sessionDoc.put("SID", uuid);
-            this.headerEdits.put("Set-Cookie", uuid);
+            this.headerEdits.put("Set-Cookie", "SID=" + uuid + ";path=/");
         }else{
             sessionDoc = Server.sessionStore.get(sid);
             if(sessionDoc == null){
@@ -142,8 +143,10 @@ public abstract class Controller implements HttpHandler {
         URI url = he.getRequestURI();
         this.parseParams(url);
         this.parseQuery(url); 
-        this.getSession(he);
         this.getRequestBody(he);
+        if(setSession){
+            this.getSession(he);
+        }
         try {
             switch(method){
                 case "GET":
@@ -162,14 +165,16 @@ public abstract class Controller implements HttpHandler {
                     this.delete();
                     break;
             }
-            Server.sessionStore.set(session.get("SID").toString(), session);
+            if(this.setSession){
+                Server.sessionStore.set(this.session.get("SID").toString(), this.session);
+            }
+            Headers resHeaders = he.getResponseHeaders();
             if(!this.overrideHeaders){
-                Headers resHeaders = he.getResponseHeaders();
-                resHeaders.set("Content-Type", contentType);
+                resHeaders.add("Content-Type", contentType);
                 for(String key : this.headerEdits.keySet()){
                     resHeaders.set(key, this.headerEdits.get(key));
                 }
-            }   
+            }
             if(!this.overrideSendHeaders){
                 he.sendResponseHeaders(this.responseCode, this.response.length);
             }
@@ -182,6 +187,7 @@ public abstract class Controller implements HttpHandler {
             }
         }catch(Exception e){
             System.out.println("Controller exception: " + e);
+            e.printStackTrace();
         }
         this.overrideHeaders = false;
         this.overrideSendHeaders = false;
@@ -195,8 +201,14 @@ public abstract class Controller implements HttpHandler {
         if(config != null){
             try{
                 this.overrideSendHeaders = true;
+                this.overrideHeaders = true;
                 Template temp = config.getTemplate(filename + ".ftlh");
                 OutputStreamWriter ow = new OutputStreamWriter(this.res);
+                Headers resHeaders = this.rawExchange.getResponseHeaders();
+                resHeaders.add("Content-Type", contentType);
+                for(String key : this.headerEdits.keySet()){
+                    resHeaders.set(key, this.headerEdits.get(key));
+                }
                 this.rawExchange.sendResponseHeaders(responseCode, 0);
                 temp.process(tData, ow);
             }catch(Exception e){

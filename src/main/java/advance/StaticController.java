@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-public class StaticController extends Controller {
+public class StaticController extends Controller {  
+    public StaticController(){
+        super();
+        super.setSession = false;
+    }
     public void get() throws IOException {
         URI url = rawExchange.getRequestURI();
         String path = url.getPath();
