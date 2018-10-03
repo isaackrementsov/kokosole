@@ -4,8 +4,11 @@
             background: linear-gradient(115deg, #e66465, #9198e5);
             color: white;
         }
+        .navbar {
+            border-style: hidden;
+        }
     </style>
-    <div class="location side">
+    <div class="side">
         <#include "partials/location.ftlh">
     </div>
     <div class="info side">

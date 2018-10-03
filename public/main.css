@@ -2,7 +2,7 @@
 body, html {
     font-family: 'Tajawal', sans-serif;
     margin: 0;
-    background-color: whitesmoke;
+    background-color: white;
 }
 h1 {
     font-size: 2vw;
@@ -16,12 +16,15 @@ h1 {
     background-color: white;
     width: 95%;
     padding: 1vh 2.5%;
+    border-bottom-style: solid;
+    border-bottom-color: rgb(240, 240, 240);
+    border-bottom-width: 1.5px;
 }
 a {
     color: inherit;
     text-decoration: none;
 }
-.navbar .navlink {
+ .navlink {
     display: block;
     border-style: solid;
     border-color: transparent;
@@ -31,9 +34,11 @@ a {
     font-weight: bold;
     text-decoration: none;
     margin-top: 0.5vh;
+    background-color: transparent;
     padding: 0.7vh 1.2vw;
+    font-family: 'Tajawal', sans-serif;
 }
-.navbar a {
+.navbar a, .navlink {
     transition: 0.2s ease-in;
 }
 .navbar a:hover {
@@ -142,10 +147,10 @@ p {
 .login * {
     margin: 3vh 0;
 }
-.register input {
+.register input, .register select {
     width: 96%;
 }
-.login input[type="text"], .login input[type="password"], .login input[type="email"] {
+.login input[type="text"], .login input[type="password"], .login input[type="email"], input[type="number"] {
     width: 96%;
     font-size: 1.2vw;
     padding: 2vh 1.7vw;
@@ -153,13 +158,16 @@ p {
 .login label {
     font-size: 1.3vw;
 }
-input[type="text"], input[type="password"], input[type="email"]{
+input[type="text"], input[type="password"], input[type="email"], select, input[type="number"]{
     padding: 1.5vh 1vw;
     border-style: solid;
     border-color: lightgrey;
     border-radius: 3px;
     border-width: 1px;
     font-size: 0.9vw;
+}
+select {
+    color: rgb(110, 110, 110);
 }
 label {
     font-size: 1vw;
@@ -216,6 +224,9 @@ h3 {
 i {
     display: inline;
 }
+h4 i {
+    font-size: 1.8vw !important;
+}
 .title {
     margin-bottom: 0;
     margin-top: 6vh;
@@ -242,4 +253,177 @@ i {
 a.button {
     max-width: 3.5vw;
     text-align: center;
+}
+.navlink i {
+    vertical-align: top;
+    font-size: 1.6vw;
+}
+.ilink {
+    padding: 0.7vh 0.6vw !important;
+}
+.profile-left, .profile-right {
+    display: inline-block;
+    vertical-align: top;
+}
+.profile-left {
+    width: 17vw;
+    margin-left: 5.75vw;
+    margin-right: 5.75vw;
+}
+.profile-right {
+    width: 59vw;
+}
+.profile-top, .profile-bottom {
+    padding: 2vh 0;
+}
+.profile-top {
+    border-bottom-style: solid;
+    border-bottom-color: rgb(240, 240, 240);
+    border-bottom-width: 1.5px;
+}
+.profile h1 {
+    color: rgb(110, 110, 110);
+    font-weight: 500;   
+    margin-bottom: 1vh;
+}
+.profile h3 {
+    color: darkgrey;
+    font-weight: 300;
+    margin: 0;
+}
+.profile h2 {
+    color: #e66465;
+    font-size: 1.3vw;
+}
+.profile h4 {
+    color: rgb(110, 110, 110);
+    font-size: 1.1vw;
+}
+.profile h4 i {
+    vertical-align: top;
+    margin-right: 0.5vw;
+}
+.profile h2 i {
+    vertical-align: -0.19vw;
+    font-size: 1.4vw;
+    margin-right: 0.2vw;
+}
+.profile-picture {
+    width: 100%;
+}
+.avatar {
+    width: 2.4vw;
+    height: 2.3vw;
+    border-style: hidden;
+    border-radius: 5vw;
+}
+.alink {
+    padding: 0.2vh 0.6vw !important;
+}
+.circle {
+    width: 0.5vw;
+    height: 0.5vw;
+    border-style: hidden;
+    border-radius: 5vw;
+    display: inline-block;
+    margin-right: 0.5vw;
+    vertical-align: super;
+}
+.circle-av {
+    vertical-align: top;
+    margin: 0;
+}
+.stat {
+    margin-top: 3vh;
+    margin-right: 3vw;
+    margin-bottom: 1vh;
+    display: inline-block;
+    text-align: center;
+}
+.stat h3 {
+    font-size: 2vw;
+    font-weight: 200;
+    color: #F76D6E;
+}
+.stat h4 {
+    color: #e66465;
+    font-size: 1.1vw;
+    margin: 1vh 0;
+}
+.inline {
+    display: inline-block;
+}
+.shade {
+    background-color: #FFCCCD;
+    padding: 1vh 1vw;
+    color: #e66465;
+    font-weight: bolder;
+    font-size: 1.2vw;
+}
+.profile p {
+    font-size: 1.2vw;
+    color: grey;
+    font-weight: 300;
+}
+.trip {
+    padding-bottom: 1vh;
+}
+.trip h2 {
+    font-weight: 300;
+    color: grey;
+}
+.location {
+    display: inline-flex;
+    background-color: #FFCCCD;
+    color: #e66465;
+    padding: 0.5vh 0.7vw;
+    font-size: 0.9vw;
+    margin: 0.5vh 0.1vw;
+}
+textarea {
+    border-style: solid;
+    border-color: transparent;
+    height: 23vh;
+    width: 59vw;
+    font-family: 'Tajawal', sans-serif;
+    color: rgba(110, 110, 110);
+    font-size: 1.2vw;
+    font-weight: 300;
+}
+textarea:focus {
+    outline: none;
+    border-color: #9198e5;
+}
+#textarea {
+    margin-bottom: 1vh;
+}
+.label {
+    font-size: 1.3vw;
+    display: block;
+    margin: 2vh 0;
+}
+.inline {
+    display: inline-block;
+    vertical-align: top;
+}
+.form-side {
+    max-width: 29vw;
+}
+.activity-form {
+    border-top-style: solid;
+    border-top-color: lightgrey;
+    border-top-width: 1px;
+    width: 14vw;
+    padding: 1vh 0.8vw;
+}
+.activity-form input[type="text"]{
+    padding: 1.1vh 0.8vw;
+    width: 12vw;
+}
+.activity-form label {
+    margin: 1vh 0;
+    font-size: 1.2vw;
+}
+.dates input {
+    width: 6vw !important;
 }

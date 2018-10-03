@@ -8,12 +8,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
-import com.sun.net.httpserver.*;
+import java.util.Map.Entry;
+import java.util.Iterator;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.Headers;
 import freemarker.template.*;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.RequestContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 public abstract class Controller implements HttpHandler {
     public Server.Param[] rules;
     public OutputStream res;
@@ -35,7 +45,6 @@ public abstract class Controller implements HttpHandler {
     protected HashMap<String, Object> session;
     protected HashMap<String, String> headerEdits;
     protected boolean setSession = true;
-    private int sessIndex = -1;
     public Controller(){
         this.data = null;
     }
@@ -45,7 +54,6 @@ public abstract class Controller implements HttpHandler {
     private void parseQuery(URI url){
         String query = url.getQuery();
         HashMap<String, String> queryPairs = separateQuery(query);
-        separateQuery(query);        
         this.query = queryPairs;
     }
     private void parseParams(URI httpUrl){
@@ -111,7 +119,12 @@ public abstract class Controller implements HttpHandler {
             }
             br.close();
             isr.close();
-            HashMap<String, String> requestBody = separateQuery(sb.toString());
+            HashMap<String, String> requestBody;
+            if(sb.toString().length() > 10000){
+                requestBody = new HashMap<>();
+            }else{
+                requestBody = separateQuery(sb.toString());
+            }
             this.body = requestBody;
         }catch(IOException ioe){
             System.out.println("Error parsing request body: " + ioe);
@@ -144,6 +157,14 @@ public abstract class Controller implements HttpHandler {
         this.parseParams(url);
         this.parseQuery(url); 
         this.getRequestBody(he);
+        String methodInput = this.body.get("_method");
+        String methodQuery = this.query.get("_method");
+        if(methodInput != null){
+            method = methodInput;
+        }
+        if(methodQuery != null){
+            method = methodQuery;
+        }
         if(setSession){
             this.getSession(he);
         }
@@ -189,15 +210,16 @@ public abstract class Controller implements HttpHandler {
             System.out.println("Controller exception: " + e);
             e.printStackTrace();
         }
+        this.body = null;
+        this.query = null;
         this.overrideHeaders = false;
         this.overrideSendHeaders = false;
         this.overrideClose = false;
         this.overrideWrite = false;
         this.contentType = "text/html";
         this.headerEdits = null;
-        this.sessIndex = -1;
     }
-    public void render(String filename, Object tData){
+    protected void render(String filename, Object tData){
         if(config != null){
             try{
                 this.overrideSendHeaders = true;
@@ -216,9 +238,64 @@ public abstract class Controller implements HttpHandler {
             }
         }
     }
-    public void redirect(String url, int code){
+    protected void redirect(String url, int code){
         this.responseCode = code;
         this.headerEdits.put("Location", url);
+    }
+    protected String[] uploadFile(String folder, String name, String mime){
+        HttpExchange he = this.rawExchange;
+        DiskFileItemFactory d = new DiskFileItemFactory();
+        try {
+            d.setRepository(new File(this.root));
+            ServletFileUpload up = new ServletFileUpload(d);
+            List<FileItem> result = up.parseRequest(new RequestContext(){
+                public String getCharacterEncoding(){
+                    return "UTF-8";
+                }
+                public int getContentLength(){
+                    return 0;
+                }
+                public String getContentType(){
+                    return he.getRequestHeaders().getFirst("Content-Type");
+                }
+                public InputStream getInputStream() throws IOException {
+                    return he.getRequestBody();
+                }
+            });
+            ArrayList<String> files = new ArrayList<>();
+            for(FileItem item : result){
+                if(item.isFormField()){
+                    String fileStr = folder;
+                    String fileName = item.getName();
+                    if(folder == null){
+                        fileStr = "";
+                    }
+                    if(name == null){
+                        fileStr = fileName;
+                    }else{
+                        fileStr = name;
+                    }
+                    if(mime == null && name != null){
+                        fileStr += "." + fileName.split(".")[fileName.length() - 1];
+                    }else if(mime != null){
+                        fileStr += mime;
+                    }
+                    File toUpload = new File(fileStr);  
+                    item.write(toUpload);  
+                    files.add(fileStr);                
+                }
+            }
+            String[] fileArray = new String[files.size()];
+            fileArray = files.toArray(fileArray);
+            return fileArray;
+        }catch(Exception ioe){
+            System.out.println("Error uploading file: " + ioe);
+            ioe.printStackTrace();
+            return null;
+        }
+    }
+    protected void deleteSession(){
+        this.session.keySet().removeIf(key -> !key.equals("SID"));
     }
     public void get() throws Exception {
         this.responseCode = 405;

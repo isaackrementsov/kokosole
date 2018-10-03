@@ -7,4 +7,8 @@ public class Duration {
         this.start = start;
         this.end = end;
     }
+    public Duration(java.sql.Date start, java.sql.Date end){
+        this.start = (Date) start;
+        this.end = (Date) end;
+    }
 }

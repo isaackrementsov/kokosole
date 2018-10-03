@@ -1,5 +1,6 @@
 package advance;
 import java.net.URI;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,9 +16,10 @@ public class StaticController extends Controller {
         URI url = rawExchange.getRequestURI();
         String path = url.getPath();
         File file = new File(super.root + path);
-        if(file.isFile()){
+        if(file.isFile() && file.exists()){
             Path filePath = Paths.get(super.root + path);
             String mime = Files.probeContentType(filePath);
+            BufferedOutputStream out = new BufferedOutputStream(super.res);
             super.overrideSendHeaders = true;
             super.overrideWrite = true;
             super.overrideHeaders = true;
@@ -28,13 +30,11 @@ public class StaticController extends Controller {
             byte[] buffer = new byte[0x10000];
             int i = 0;
             while((i = fis.read(buffer)) >= 0){
-                super.res.write(buffer, 0, i);
+                out.write(buffer, 0, i);
             }
             fis.close();
+            out.close();
             super.res.close();
-        }else{
-            super.response = "404 (Not Found)\n".getBytes();
-            super.responseCode = 404;
         }
     }
 }
