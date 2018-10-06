@@ -10,15 +10,6 @@ public class Location extends Model {
     public Activity[] activities;
     public String id;
     public String tripID;
-    public Location(String town, String subdivision, String country, int zip, Activity[] activities, String tripID){
-        this.town = town;
-        this.subdivision = subdivision;
-        this.country = country;
-        this.zip = zip;
-        this.activities = activities;
-        this.tripID = tripID;
-        this.id = UUID.randomUUID().toString();
-    }
     public Location(String town, String subdivision, String country, int zip, Activity[] activities, String tripID, String id){
         this.town = town;
         this.subdivision = subdivision;
@@ -28,16 +19,19 @@ public class Location extends Model {
         this.tripID = tripID;
         this.id = id;       
     }
+    public Location(String town, String subdivision, String country, int zip, Activity[] activities, String tripID){
+        this(town, subdivision, country, zip, activities, tripID, UUID.randomUUID().toString());
+    }
     public void save(){
         try{
             connect();
-            PreparedStatement pst = conn.prepareStatement("INSERT INTO activities (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)");
+            PreparedStatement pst = conn.prepareStatement("INSERT INTO locations (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)");
             pst.setString(1, this.town);
             pst.setString(2, this.subdivision);
             pst.setString(3, this.country);
             pst.setInt(4, this.zip);
-            pst.setString(5, this.id);
-            pst.setString(6, this.tripID);
+            pst.setString(5, this.tripID);
+            pst.setString(6, this.id);
             pst.execute();
             pst.close();   
             conn.close();

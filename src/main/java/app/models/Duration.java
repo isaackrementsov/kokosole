@@ -1,14 +1,14 @@
 package app.models;
-import java.util.Date;
+import java.time.LocalDate;
 public class Duration {
-    public Date start;
-    public Date end;
-    public Duration(Date start, Date end){
+    public LocalDate start;
+    public LocalDate end;
+    public Duration(LocalDate start, LocalDate end){
         this.start = start;
         this.end = end;
     }
     public Duration(java.sql.Date start, java.sql.Date end){
-        this.start = (Date) start;
-        this.end = (Date) end;
+        this.start = start.toLocalDate();
+        this.end = end.toLocalDate();
     }
 }

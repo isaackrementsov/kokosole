@@ -2,8 +2,8 @@ package app.controllers;
 import app.models.*;
 import advance.Controller;
 import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
@@ -28,8 +28,9 @@ public class TripController extends Controller {
         }
     }
     public void post(){
+        DateTimeFormatter dt = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         JSONArray jsonLocations = new JSONArray(super.body.get("locations"));
-        ArrayList<Location> locations = new ArrayList<>();
+        Trip trip = new Trip(super.body.get("name"), new Location[jsonLocations.length()], (String) super.session.get("id"));
         for(int x = 0; x < jsonLocations.length(); x++){
             JSONObject jsonLocation = jsonLocations.getJSONObject(x);
             JSONArray jsonActivities = jsonLocation.getJSONArray("activities");
@@ -39,32 +40,28 @@ public class TripController extends Controller {
                 jsonLocation.getString("country"), 
                 jsonLocation.getInt("zip"), 
                 new Activity[jsonActivities.length()],
-                jsonLocation.getString("trip_id"),
-                jsonLocation.getString("id")
+                trip.id
             );
             for(int y = 0; y < jsonActivities.length(); y++){
                 JSONObject jsonActivity = jsonActivities.getJSONObject(y);
                 JSONArray jsonParticipants = jsonActivity.getJSONArray("participants");
+                System.out.println(jsonActivity.getString("start"));
                 Activity activity = new Activity(
                     jsonActivity.getString("name"), 
-                    new Date(jsonActivity.getString("start")), 
-                    new Date(jsonActivity.getString("end")), 
+                    LocalDate.parse(jsonActivity.getString("start"), dt), 
+                    LocalDate.parse(jsonActivity.getString("end"), dt), 
                     new User[jsonParticipants.length()], 
-                    jsonActivity.getString("location_id"),
-                    jsonActivity.getString("id")
+                    location.id
                 );
                 for(int i = 0; i < jsonParticipants.length(); i++){
                     JSONObject jsonParticipant = jsonParticipants.getJSONObject(i); 
-                    User user = new User(jsonActivity.getString("id"));
+                    User user = new User(jsonParticipant.getString("id"));
                     activity.participants[i] = user;                
                 }
                 location.activities[y] = activity;
             }
-            locations.add(location);
+            trip.locations[x] = location;
         }
-        Location[] locationArray = new Location[locations.size()];
-        locationArray = locations.toArray(locationArray);
-        Trip trip = new Trip(super.body.get("name"), locationArray, (String) super.session.get("id"));
         trip.save();
         super.redirect("/trip/" + trip.id, 302);
     }

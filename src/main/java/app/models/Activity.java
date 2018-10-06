@@ -1,5 +1,5 @@
 package app.models;
-import java.util.Date;
+import java.time.LocalDate;;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.sql.*;
@@ -9,39 +9,37 @@ public class Activity extends Model {
     public String name;
     public Duration duration;
     public User[] participants;
-    public Activity(String name, Date start, Date end, User[] participants, String locationId){
-        this.name = name;
-        this.duration = new Duration(start, end);
-        this.participants = participants;
-        this.locationId = locationId;
-        this.id = UUID.randomUUID().toString();
-
-    }
-    public Activity(String name, Date start, Date end, User[] participants, String locationId, String id){
+    public Activity(String name, LocalDate start, LocalDate end, User[] participants, String locationId, String id){
         this.name = name;
         this.duration = new Duration(start, end);
         this.participants = participants;
         this.locationId = locationId;
         this.id = id;
     }
+    public Activity(String name, LocalDate start, LocalDate end, User[] participants, String locationId){
+        this(name, start, end, participants, locationId, UUID.randomUUID().toString());
+    }
     public void save(){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO activities (name, start, end, location_id, uuid) values(?, ?, ?, ?, ?)");
             pst.setString(1, this.name);
-            pst.setDate(2, (java.sql.Date) this.duration.start);
-            pst.setDate(3, (java.sql.Date) this.duration.end);
+            pst.setDate(2, Date.valueOf(this.duration.start));
+            pst.setDate(3, Date.valueOf(this.duration.end));
             pst.setString(4, this.locationId);
             pst.setString(5, this.id);
             pst.execute();
             pst.close();   
+            conn.close();
             for(User user : this.participants){
+                connect();
                 PreparedStatement pst2 = conn.prepareStatement("INSERT INTO activity_connections (user_id, activity_id) values(?, ?)");
                 pst2.setString(1, user.id);
                 pst2.setString(2, this.id);
+                pst2.execute();
                 pst2.close();
+                conn.close();
             }
-            conn.close();
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
@@ -80,12 +78,11 @@ public class Activity extends Model {
     private static Activity getByResultSet(ResultSet rs) throws SQLException {
         if(rs.next()){
             String sName = rs.getString("name");
-            Date sStart = rs.getDate("start");
-            Date sEnd = rs.getDate("end");
+            Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
             User[] sParticipants = getParticipants(sUuid);
-            Activity activity = new Activity(sName, sStart, sEnd, sParticipants, sLocationId, sUuid);
+            Activity activity = new Activity(sName, sDuration.start, sDuration.end, sParticipants, sLocationId, sUuid);
             return activity;
         }else{
             return null;
@@ -96,12 +93,11 @@ public class Activity extends Model {
         ArrayList<Activity> activities = new ArrayList<>();
         while(rs.next()){
             String sName = rs.getString("name");
-            Date sStart = rs.getDate("start");
-            Date sEnd = rs.getDate("end");
+            Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
             User[] sParticipants = getParticipants(sUuid);
-            Activity activity = new Activity(sName, sStart, sEnd, sParticipants, sLocationId, sUuid);
+            Activity activity = new Activity(sName, sDuration.start, sDuration.end, sParticipants, sLocationId, sUuid);
             activities.add(activity);
         }
         Activity[] activityArray = new Activity[activities.size()];
@@ -119,7 +115,7 @@ public class Activity extends Model {
                 "uuid varchar(255)," +
                 "location_id varchar(255)," +
                 "PRIMARY KEY (uuid)," +
-                "FOREIGN KEY (location_id) REFERENCES users(uuid))" 
+                "FOREIGN KEY (location_id) REFERENCES locations(uuid))" 
             );
             connect();
             execute(

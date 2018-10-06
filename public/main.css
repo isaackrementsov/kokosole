@@ -350,9 +350,6 @@ a.button {
     font-size: 1.1vw;
     margin: 1vh 0;
 }
-.inline {
-    display: inline-block;
-}
 .shade {
     background-color: #FFCCCD;
     padding: 1vh 1vw;
@@ -404,7 +401,6 @@ textarea:focus {
 }
 .inline {
     display: inline-block;
-    vertical-align: top;
 }
 .form-side {
     max-width: 29vw;
@@ -426,4 +422,34 @@ textarea:focus {
 }
 .dates input {
     width: 6vw !important;
+}
+.textarea-input {
+    padding: 1.1vh 0.8vw;
+    height: 1.2vw;
+    width: 10vw;
+    font-size: 0.9vw;
+    border-style: solid;
+    border-color: lightgrey;
+    border-width: 1px;
+    border-radius: 3px;
+}
+.box {
+    display: inline-block;
+    padding: 0.7vh 0.5vw;
+    background-color: lightgrey;
+    font-size: 1vw;
+    border-style: hidden;
+    border-radius: 0.5vw;
+    margin: 0.2vh 0.2vw;
+}
+.box i {
+    font-size: 1vw;
+    vertical-align: middle;
+    margin-left: 0.2vw;
+}
+#participants {
+    width: 22vw;
+}
+.aligntop {
+    vertical-align: top;
 }

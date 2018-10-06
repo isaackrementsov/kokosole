@@ -1,35 +1,34 @@
 package app.models;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.UUID;
 public class Trip extends Model {
     public String name;
     public Location[] locations;
     public String userID;
     public String id;
-    public Trip(String name, Location[] locations, String userID){
-        this.name = name;
-        this.locations = locations;
-        this.userID = userID;
-    }
     public Trip(String name, Location[] locations, String userID, String id){
         this.name = name;
         this.locations = locations;
         this.userID = userID;
         this.id = id;
     }
+    public Trip(String name, Location[] locations, String userID){
+        this(name, locations, userID, UUID.randomUUID().toString());
+    }
     public void save(){
         try{
             connect();
-            PreparedStatement pst = conn.prepareStatement("INSERT INTO users (name, user_id, uuid) values(?, ?, ?)");
+            PreparedStatement pst = conn.prepareStatement("INSERT INTO trips (name, user_id, uuid) values(?, ?, ?)");
             pst.setString(1, this.name);
             pst.setString(2, this.userID);
             pst.setString(3, this.id);
             pst.execute();
             pst.close();  
+            conn.close();
             for(Location loc : this.locations){
                 loc.save();
             } 
-            conn.close();
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
@@ -44,7 +43,7 @@ public class Trip extends Model {
             ResultSet rs = executeQuery("SELECT * FROM trips WHERE user_id='" + userID + "'");
             ArrayList<Trip> trips = new ArrayList<>();
             while(rs.next()){
-                String sName = rs.getString("town");
+                String sName = rs.getString("name");
                 String sUuid = rs.getString("uuid");
                 String sUserID = rs.getString("user_id");
                 Location[] sLocations = Location.getLocationsByID(sUuid);
@@ -84,7 +83,7 @@ public class Trip extends Model {
     }
     public static Trip getByResultSet(ResultSet rs) throws SQLException {
         if(rs.next()){
-            String sName = rs.getString("town");
+            String sName = rs.getString("name");
             String sUuid = rs.getString("uuid");
             String sUserID = rs.getString("user_id");
             Location[] sLocations = Location.getLocationsByID(sUuid);

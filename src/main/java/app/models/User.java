@@ -10,16 +10,6 @@ public class User extends Model {
     public String bio;
     public String country;
     public String id;
-    public User(String name, String email, String password, String avatar, String country){
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.avatar = avatar;
-        this.status = "inactive";
-        this.bio = "";
-        this.country = country;
-        this.id = UUID.randomUUID().toString();
-    }
     public User(String name, String email, String password, String avatar, String status, String bio, String country, String id){
         this.name = name;
         this.email = email;
@@ -29,6 +19,9 @@ public class User extends Model {
         this.bio = bio;
         this.country = country;
         this.id = id;
+    }
+    public User(String name, String email, String password, String avatar, String country){
+        this(name, email, password, avatar, "inactive", "", country, UUID.randomUUID().toString());
     }
     public User(String id){
         this.id = id;
