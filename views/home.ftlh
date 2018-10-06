@@ -29,9 +29,9 @@
                 <#else>
                     <#list trips as trip>
                         <div class="trip">
-                            <h2>${trip.name}</h2>
+                            <h2><a href="/trip/${trip.id}">${trip.name}</a></h2>
                             <#list trip.locations as location>
-                                <div class="location">${location.name}</div>
+                                <div class="location">${location.town}</div>
                             </#list>
                         </div>  
                     </#list>

@@ -26,41 +26,41 @@
                     <h2 style="color:grey; font-size: 1.7vw; font-weight: 300">Activities</h2>
                     <div id="activities"></div>
                     <div class="activity-form">
-                        <label for="location-name" class="label">Activity name</label>
+                        <label for="activity-name" class="label">Activity name</label>
                         <input type="text" name="activity-name"> 
                         <div class="dates">
-                            <label for="location-name" class="label">Dates (mm/dd/yyyy)</label>
+                            <label for="start" class="label">Dates (mm/dd/yyyy)</label>
                             <input type="text" class="inline" name="start" placeholder="Start">  
                             <input type="text" class="inline" name="end" placeholder="End">
                         </div>    
-                        <label for="location-name" class="label">Users</label>
+                        <label for="participants-name" class="label">Users</label>
                         <div id="participants"></div>
                         <input type="text" name="participants" placeholder="Separate emails with ','">
-                        <div id="user-ids"></div>
+                        <div id="user-ids">
+                            <#list users as user>
+                                <input type="hidden" value="${user.id}" id="${user.email}">
+                            </#list>
+                        </div>
                         <button type="button" class="smaller navlink" style="font-weight: 400; background-color: #FFCCCD; font-size: 1.05vw; margin-top: 3vh" onclick="addActivity()">
                             Save activity
                         </button>                
                     </div>
                 </div>
                 <div class="inline form-side aligntop">
-                    <div style="margin-bottom: 5vh">
-                        <label for="location-name" class="label">Location name</label>
-                        <input type="text" name="location-name">
-                    </div>
                     <div class="inline" style="margin-right: 1.5vw">
-                        <label for="location-name" class="label">City</label>
+                        <label for="town" class="label">City</label>
                         <input type="text" name="town">
                     </div>
                     <div class="inline">
-                        <label for="location-name" class="label">Postal Code</label>
+                        <label for="zip" class="label">Postal Code</label>
                         <input type="number" name="zip">
                     </div>
                     <div class="inline" style="margin-right: 1.5vw">
-                        <label for="location-name" class="label">Country</label>
+                        <label for="country" class="label">Country</label>
                         <input type="text" name="country">
                     </div>
                     <div class="inline">
-                        <label for="location-name" class="label">Subdivision</label>
+                        <label for="subdivision" class="label">Subdivision</label>
                         <input type="text" name="subdivision">
                     </div>
                 </div>
@@ -79,14 +79,12 @@
         activities.value = [];
         function addLocation(){
             var locationsDiv = document.getElementById("locations");
-            var name = document.getElementsByName("location-name")[0];
             var town = document.getElementsByName("town")[0];
             var subdivision = document.getElementsByName("subdivision")[0];
             var country = document.getElementsByName("country")[0];
             var zip = document.getElementsByName("zip")[0];
             locations.push(
                 {
-                    name: name.value, 
                     town: town.value, 
                     subdivision: subdivision.value, 
                     country: country.value, 
@@ -94,7 +92,7 @@
                     activities: activities.value
                 }
             );
-            locationsDiv.innerHTML += `<div class="box" value='` + name.value + `'>` + name.value + 
+            locationsDiv.innerHTML += `<div class="box" value='` + town.value + `'>` + town.value + 
             `<i class="material-icons" onclick="deleteLocation(this)">close</i></div>`;
             name.value = '';
             town.value = '';
@@ -117,7 +115,7 @@
             `<i class="material-icons" onclick="deleteActivity(this)">close</i></div>`;
             name.value = '';
             start.value = '';
-            start.value = '';
+            end.value = '';
             participants.value = [];
             participants.innerHTML = '';
         }
@@ -127,15 +125,13 @@
         }
         function addParticipant(e){
             if(e.keyCode == 188){
-                var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim();
-                var id = Array.from(document.getElementById("user-ids").childNodes).filter(function(elem){
-                    return elem.getAttribute("name").toLowerCase().trim() == text;
-                })[0];
+                var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
+                var id = document.getElementById(text);
                 participantsForm.value = '';
                 if(!id){
                     text += ' -<span style="color: red"> invalid user</span>';
                 }else{
-                    participants.value = participants.value.concat([{id: id, name: text}]);
+                    participants.value.push({id: id.value, name: text});
                 }
                 participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
                 `<i class="material-icons" onclick="deleteParticipant(this)">close</i></div>`;
@@ -159,7 +155,7 @@
         }
         function deleteLocation(e){
             locations = locations.filter(function(elem){
-                return elem.name != e.parentNode.getAttribute("value");
+                return elem.town != e.parentNode.getAttribute("value");
             });
             deleteParent(e);            
         }

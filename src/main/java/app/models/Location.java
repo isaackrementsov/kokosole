@@ -79,7 +79,7 @@ public class Location extends Model {
         }  
     }
     public static Location[] getLocationsByID(String tripID) throws SQLException{
-        ResultSet rs = executeQuery("SELECT * FROM locations WHERE uuid='" + tripID + "'");
+        ResultSet rs = executeQuery("SELECT * FROM locations WHERE trip_id='" + tripID + "'");
         ArrayList<Location> locations = new ArrayList<>();
         while(rs.next()){
             String sTown = rs.getString("town");

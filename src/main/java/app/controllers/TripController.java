@@ -15,12 +15,15 @@ public class TripController extends Controller {
         }else{
             String id = super.params.get("id");
             HashMap<String, Object> data = new HashMap<>();
+            ObjectMapper mapper = new ObjectMapper();
             data.put("session", super.session);
             if(id.equals("add")){
+                User[] users = User.getAll();
+                HashMap<String, Object>[] usersMap = mapper.convertValue(users, HashMap[].class);
+                data.put("users", usersMap);
                 super.render("addTrip", data);
             }else{
                 Trip trip = Trip.getByID(id);
-                ObjectMapper mapper = new ObjectMapper();
                 HashMap<String, Object> tripMap = mapper.convertValue(trip, HashMap.class);
                 data.put("trip", tripMap);
                 super.render("trip", data);
@@ -45,7 +48,6 @@ public class TripController extends Controller {
             for(int y = 0; y < jsonActivities.length(); y++){
                 JSONObject jsonActivity = jsonActivities.getJSONObject(y);
                 JSONArray jsonParticipants = jsonActivity.getJSONArray("participants");
-                System.out.println(jsonActivity.getString("start"));
                 Activity activity = new Activity(
                     jsonActivity.getString("name"), 
                     LocalDate.parse(jsonActivity.getString("start"), dt), 

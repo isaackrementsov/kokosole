@@ -69,11 +69,13 @@ public class Activity extends Model {
         ResultSet rs = executeQuery("SELECT * FROM activity_connections WHERE activity_id='" + activityID + "'");
         ArrayList<User> users = new ArrayList<>();
         while(rs.next()){
-            String sUuid = rs.getString("uuid");
-            User user = User.getByID(sUuid);
+            String sUserID = rs.getString("user_id");
+            User user = User.getByID(sUserID);
             users.add(user);
         }
-        return (User[]) users.toArray();
+        User[] userArray = new User[users.size()];
+        userArray = users.toArray(userArray);
+        return userArray;
     }  
     private static Activity getByResultSet(ResultSet rs) throws SQLException {
         if(rs.next()){
@@ -89,7 +91,7 @@ public class Activity extends Model {
         }   
     }
     public static Activity[] getActivitiesByID(String locationID) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM activities WHERE uuid='" + locationID + "'");
+        ResultSet rs = executeQuery("SELECT * FROM activities WHERE location_id='" + locationID + "'");
         ArrayList<Activity> activities = new ArrayList<>();
         while(rs.next()){
             String sName = rs.getString("name");
