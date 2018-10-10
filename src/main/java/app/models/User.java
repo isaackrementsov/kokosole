@@ -75,7 +75,7 @@ public class User extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-       }catch(SQLException se){
+        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
         }

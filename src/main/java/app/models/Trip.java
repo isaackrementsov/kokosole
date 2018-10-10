@@ -37,6 +37,25 @@ public class Trip extends Model {
             se.printStackTrace();
         }
     }
+    public void update(){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement(
+                "UPDATE trips SET name=COALESCE(?, name) WHERE uuid=?"
+            );
+            pst.setString(1, this.name);
+            pst.setString(2, this.id);
+            pst.executeUpdate();
+            pst.close();
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+       }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }
+    }
     public static Trip[] getByUserID(String userID){
         try{
             connect();

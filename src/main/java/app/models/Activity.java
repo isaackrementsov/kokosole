@@ -1,5 +1,5 @@
 package app.models;
-import java.time.LocalDate;;
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.sql.*;
@@ -47,6 +47,49 @@ public class Activity extends Model {
             System.out.println("SQL error: " + se);
             se.printStackTrace();
         }
+    }
+    public void update(){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement(
+                "UPDATE locations SET name=COALESCE(?, name),start=COALESCE(?, start),end=COALESCE(?, end)," + 
+                "zip=COALESCE(?, zip) WHERE uuid=?"
+            );
+            pst.setString(1, this.name);
+            pst.setDate(2, Date.valueOf(this.duration.start));
+            pst.setDate(3, Date.valueOf(this.duration.start));
+            pst.setString(4, this.id);
+            pst.executeUpdate();
+            pst.close();
+            for(User participant : this.participants){
+
+            }
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }
+    }
+    public String getUserID(){
+        try{
+            connect();
+            ResultSet rs = executeQuery("SELECT trip_id FROM locations WHERE uuid=" + this.locationId);
+            ResultSet rs2 = executeQuery("SELECT user_id FROM trips WHERE uuid=" + rs.getString("trip_id"));
+            String id = rs2.getString("user_id");
+            conn.close();
+            return id;
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+            return null;
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+            return null;
+        }   
     }
     public static Activity getByID(String uuid){
         try{

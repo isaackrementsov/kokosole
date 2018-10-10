@@ -18,6 +18,8 @@ public class App {
         app.addController("/auth/:action", new AuthController());
         app.addController("/user/:id", new UserController());
         app.addController("/trip/:id", new TripController());
+        app.addController("/location/:id", new LocationController());
+        app.addController("/activity/:id", new ActivityController());
         app.addStaticController("/public/");
         app.listen();
     }

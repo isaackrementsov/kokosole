@@ -453,3 +453,31 @@ textarea:focus {
 .aligntop {
     vertical-align: top;
 }
+.location-card {
+    width: 15vw;
+    display: inline-block;
+    padding: 0.7vh 1vw;
+    border-style: hidden;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.01);
+}
+.location-card .buttons * {
+    display: inline;
+    font-size: 1.1vw;
+}
+.location-card .buttons {
+    margin-top: 4.5vh;
+    margin-bottom: 1.5vh;
+}
+.location-card .buttons a {
+    display: inline-block;
+}
+.location-card h2 {
+    color: rgb(110, 110, 110);
+    font-size: 1.5vw;
+    font-weight: 400;
+}
+.date {
+    font-size: 1vw;
+    display: block;
+}

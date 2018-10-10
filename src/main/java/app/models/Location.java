@@ -46,6 +46,46 @@ public class Location extends Model {
             se.printStackTrace();
         }
     }
+    public void update(){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement(
+                "UPDATE locations SET town=COALESCE(?, town),subdivision=COALESCE(?, subdivision),country=COALESCE(?, country)," + 
+                "zip=COALESCE(?, zip) WHERE uuid=?"
+            );
+            pst.setString(1, this.town);
+            pst.setString(2, this.subdivision);
+            pst.setString(3, this.country);
+            pst.setInt(4, this.zip);
+            pst.setString(5, this.id);
+            pst.executeUpdate();
+            pst.close();
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }
+    }
+    public String getUserID(){
+        try{
+            connect();
+            ResultSet rs = executeQuery("SELECT user_id FROM trips WHERE uuid=" + this.tripID);
+            String id = rs.getString("user_id");
+            conn.close();
+            return id;
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+            return null;
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+            return null;
+        }   
+    }
     public static Location getByID(String uuid){
         try{
             connect();
