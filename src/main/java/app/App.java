@@ -37,13 +37,13 @@ public class App {
                 case 'd': //"m-/your/directory"
                     root = args[i].substring(2);
                     break;
-                case 'dbu':
+                case 'u':
                     Model.CONNECTION_STRING = args[i].substring(2);
                     break;
-                case 'dbp':
+                case 'p':
                     Model.PASSWORD = args[i].substring(2);
                     break;
-                case 'dbc':
+                case 'c':
                     Model.USERNAME = args[i].substring(2);
                     break;
             }
