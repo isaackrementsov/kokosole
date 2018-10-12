@@ -37,6 +37,15 @@ public class App {
                 case 'd': //"m-/your/directory"
                     root = args[i].substring(2);
                     break;
+                case 'dbu':
+                    Model.CONNECTION_STRING = args[i].substring(2);
+                    break;
+                case 'dbp':
+                    Model.PASSWORD = args[i].substring(2);
+                    break;
+                case 'dbc':
+                    Model.USERNAME = args[i].substring(2);
+                    break;
             }
         }
         Server app = new Server(9000, "C:/users/isaac/documents/java/kokosole");
