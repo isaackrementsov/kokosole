@@ -29,32 +29,38 @@ public class ActivityController extends Controller {
         String subAction = super.query.get("sub");
         Activity activity = Activity.getByID(id);
         Class<?> c = activity.getClass();
-        if(action.equals("participants")){
-            String pID = super.body.get("id");
-            ArrayList<User> participants = new ArrayList<User>(Arrays.asList(activity.participants));
-            if(subAction.equals("add")){
-                boolean exists = false;
-                for(User user : participants){
-                    if(user.id.equals(pID)){
-                        exists = true;
+        String userID = activity.getUserID(true);
+        if(userID != null){
+            if(userID.equals(super.session.get("id"))){
+                if(action.equals("participants")){
+                    String pID = super.body.get("id");
+                    ArrayList<User> participants = new ArrayList<User>(Arrays.asList(activity.participants));
+                    if(subAction.equals("add")){
+                        boolean exists = false;
+                        for(User user : participants){
+                            if(user.id.equals(pID)){
+                                exists = true;
+                            }
+                        }
+                        if(!exists){
+                            participants.add(new User(pID));
+                        }
+                    }else if(subAction.equals("delete")){
+                        participants.removeIf(user -> user.id.equals(pID));
+                    }
+                    activity.participants = participants.toArray(new User[participants.size()]);
+                }else{
+                    for(String key : super.body.keySet()){
+                        try{
+                            Field f = c.getField(key);
+                            f.set(activity, super.body.get(key));
+                        }catch(Exception n){}
                     }
                 }
-                if(!exists){
-                    participants.add(new User(pID));
-                }
-            }else if(subAction.equals("delete")){
-                participants.removeIf(user -> user.id.equals(pID));
-            }
-            activity.participants = participants.toArray(new User[participants.size()]);
-        }else{
-            for(String key : super.body.keySet()){
-                try{
-                    Field f = c.getField(key);
-                    f.set(activity, super.body.get(key));
-                }catch(Exception n){}
+                activity.update();
             }
         }
-        activity.update();
+        super.redirect("/location/" + activity.id, 302);
         super.redirect("/location/" + activity.id, 302);
     }
 }

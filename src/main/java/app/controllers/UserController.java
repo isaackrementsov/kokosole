@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class UserController extends Controller {
     public void get(){
         User user = User.getByID(super.params.get("id"));  
-        if(user == null){
+        if(user.name == null){
             super.responseCode = 404;
             super.response = "User not found".getBytes();
         }else{

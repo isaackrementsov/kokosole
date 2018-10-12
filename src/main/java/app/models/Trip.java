@@ -16,6 +16,7 @@ public class Trip extends Model {
     public Trip(String name, Location[] locations, String userID){
         this(name, locations, userID, UUID.randomUUID().toString());
     }
+    public Trip(){ }
     public void save(){
         try{
             connect();
@@ -93,11 +94,11 @@ public class Trip extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
+            return new Trip();
        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new Trip();
         }
     }
     public static Trip getByResultSet(ResultSet rs) throws SQLException {
@@ -109,7 +110,7 @@ public class Trip extends Model {
             Trip trip = new Trip(sName, sLocations, sUserID, sUuid);
             return trip;
         }else{
-            return null;
+            return new Trip();
         }  
     }
     public static void migrate(){

@@ -47,13 +47,19 @@ public class LocationController extends Controller {
         String id = super.params.get("id");
         Location location = Location.getByID(id);
         Class<?> c = location.getClass();
-        for(String key : super.body.keySet()){
-            try{
-                Field f = c.getField(key);
-                f.set(location, super.body.get(key));
-            }catch(Exception n){ }
+        String userID = location.getUserID(true);
+        System.out.println(userID);
+        if(userID != null){
+            if(userID.equals(super.session.get("id"))){
+                for(String key : super.body.keySet()){
+                    try{
+                        Field f = c.getField(key);
+                        f.set(location, super.body.get(key));
+                    }catch(Exception n){ }
+                }
+                location.update();
+            }
         }
-        location.update();
         super.redirect("/location/" + location.id, 302);
     }
 }

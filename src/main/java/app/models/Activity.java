@@ -4,7 +4,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.sql.*;
 public class Activity extends Model {
-    public String locationId;
+    public String locationID;
     public String id;
     public String name;
     public Duration duration;
@@ -13,12 +13,13 @@ public class Activity extends Model {
         this.name = name;
         this.duration = new Duration(start, end);
         this.participants = participants;
-        this.locationId = locationId;
+        this.locationID = locationId;
         this.id = id;
     }
     public Activity(String name, LocalDate start, LocalDate end, User[] participants, String locationId){
         this(name, start, end, participants, locationId, UUID.randomUUID().toString());
     }
+    public Activity(){ }
     public void save(){
         try{
             connect();
@@ -26,7 +27,7 @@ public class Activity extends Model {
             pst.setString(1, this.name);
             pst.setDate(2, Date.valueOf(this.duration.start));
             pst.setDate(3, Date.valueOf(this.duration.end));
-            pst.setString(4, this.locationId);
+            pst.setString(4, this.locationID);
             pst.setString(5, this.id);
             pst.execute();
             pst.close();   
@@ -62,7 +63,13 @@ public class Activity extends Model {
             pst.executeUpdate();
             pst.close();
             for(User participant : this.participants){
-
+                PreparedStatement pst2 = conn.prepareStatement(
+                    "INSERT INTO activity_connections (user_id, activity_id) values(?,?)"
+                );
+                pst2.setString(1, participant.id);
+                pst2.setString(2, this.id);
+                pst2.execute();
+                pst2.close();
             }
             conn.close();
         }catch(ClassNotFoundException ce){
@@ -73,12 +80,16 @@ public class Activity extends Model {
             se.printStackTrace();
         }
     }
-    public String getUserID(){
+    public String getUserID(boolean verification){
         try{
             connect();
-            ResultSet rs = executeQuery("SELECT trip_id FROM locations WHERE uuid=" + this.locationId);
-            ResultSet rs2 = executeQuery("SELECT user_id FROM trips WHERE uuid=" + rs.getString("trip_id"));
-            String id = rs2.getString("user_id");
+            ResultSet rs = executeQuery(
+                "SELECT user_id FROM trips WHERE uuid=(SELECT trip_id FROM locations WHERE uuid= '" + this.locationID + "')"
+            );
+            String id = "";
+            if(rs.next()){
+                id = rs.getString("user_id");
+            }
             conn.close();
             return id;
         }catch(ClassNotFoundException ce){
@@ -101,11 +112,11 @@ public class Activity extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
+            return new Activity();
        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new Activity();
         }
     }
     private static User[] getParticipants(String activityID) throws SQLException {
@@ -130,7 +141,7 @@ public class Activity extends Model {
             Activity activity = new Activity(sName, sDuration.start, sDuration.end, sParticipants, sLocationId, sUuid);
             return activity;
         }else{
-            return null;
+            return new Activity();
         }   
     }
     public static Activity[] getActivitiesByID(String locationID) throws SQLException {
@@ -168,7 +179,8 @@ public class Activity extends Model {
                 "activity_connections (user_id varchar(255), " +
                 "activity_id varchar(255), " + 
                 "FOREIGN KEY (user_id) REFERENCES users(uuid)," + 
-                "FOREIGN KEY (activity_id) REFERENCES activities(uuid))"
+                "FOREIGN KEY (activity_id) REFERENCES activities(uuid))," + 
+                "UNIQUE(user_id)"
             );
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);

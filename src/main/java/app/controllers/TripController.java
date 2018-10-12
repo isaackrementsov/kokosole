@@ -52,7 +52,7 @@ public class TripController extends Controller {
     }
     public void patch(){
         Trip trip = Trip.getByID(super.params.get("id"));
-        if(trip != null){
+        if(trip.userID != null){
             if(trip.userID.equals(super.session.get("id"))){
                 trip.name = super.body.get("name");
                 trip.update();

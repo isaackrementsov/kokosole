@@ -34,7 +34,7 @@ public class AuthController extends Controller {
             }else{
                 super.responseCode = 404;
             }
-            if(user == null){
+            if(user.name == null){
                 super.redirect("/auth/login", 302);
             }else{
                 if(action.equals("login") || action.equals("signup")){

@@ -22,6 +22,7 @@ public class Location extends Model {
     public Location(String town, String subdivision, String country, int zip, Activity[] activities, String tripID){
         this(town, subdivision, country, zip, activities, tripID, UUID.randomUUID().toString());
     }
+    public Location(){ }
     public void save(){
         try{
             connect();
@@ -69,11 +70,14 @@ public class Location extends Model {
             se.printStackTrace();
         }
     }
-    public String getUserID(){
+    public String getUserID(boolean verification){
         try{
             connect();
-            ResultSet rs = executeQuery("SELECT user_id FROM trips WHERE uuid=" + this.tripID);
-            String id = rs.getString("user_id");
+            ResultSet rs = executeQuery("SELECT user_id FROM trips WHERE uuid='" + this.tripID + "'");
+            String id = "";
+            if(rs.next()){
+                id = rs.getString("user_id");
+            }
             conn.close();
             return id;
         }catch(ClassNotFoundException ce){
@@ -96,11 +100,11 @@ public class Location extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
+            return new Location();
        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new Location();
         }
     }
     private static Location getByResultSet(ResultSet rs) throws SQLException {
@@ -115,7 +119,7 @@ public class Location extends Model {
             Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
             return location;
         }else{
-            return null;
+            return new Location();
         }  
     }
     public static Location[] getLocationsByID(String tripID) throws SQLException{
