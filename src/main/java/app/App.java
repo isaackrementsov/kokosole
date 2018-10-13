@@ -3,8 +3,12 @@ import app.controllers.*;
 import app.models.*;
 import advance.Server;
 public class App {
-    public static void main(String[] args){
+    public static void main(String[] argList){
         String root = "C:/users/isaac/documents/java/kokosole";
+        String[] args = new String[0];
+        if(argList.length > 0){
+          args = argList[0].split(";");
+        }
         for(int i = 0; i < args.length; i++){
             switch(args[i].charAt(0)){
                 case 'm': //"m-User,Trip,Location"
@@ -48,7 +52,7 @@ public class App {
                     break;
             }
         }
-        Server app = new Server(9000, "C:/users/isaac/documents/java/kokosole");
+        Server app = new Server(9000, root);
         app.setViewDir("/views/");
         app.addController("/", new MainController());
         app.addController("/auth/:action", new AuthController());
