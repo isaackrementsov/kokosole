@@ -86,7 +86,6 @@
                             </form>
                             <div class="buttons">
                                 <button onclick="opendiv('participants${activity.id}', 'block')" class="navlink">Participants</button>
-                                <a href="/messages/${activity.id}" class="navlink semi-cta outline">Message</a>
                             </div>
                             <div id="participants${activity.id}" style="display: none">
                                 <#list activity.participants as participant>
