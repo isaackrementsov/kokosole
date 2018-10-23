@@ -1,6 +1,7 @@
 package app;
 import app.controllers.*;
 import app.models.*;
+import app.websockets.*;
 import advance.Server;
 public class App {
     public static void main(String[] argList){
@@ -18,8 +19,10 @@ public class App {
                         Trip.migrate();
                         Location.migrate();
                         Activity.migrate();
+                        Conversation.migrate();
+                        Message.migrate();
                     }else{
-                        String[] dbs = args[i].split(",");
+                        String[] dbs = args[i].substring(2).split(",");
                         for(String db : dbs){
                             switch(db){
                                 case "User":
@@ -33,6 +36,12 @@ public class App {
                                     break;
                                 case "Activity":
                                     Activity.migrate();
+                                    break;
+                                case "Conversation":
+                                    Conversation.migrate();
+                                    break;
+                                case "Message":
+                                    Message.migrate();
                                     break;
                             }
                         }
@@ -53,6 +62,7 @@ public class App {
             }
         }
         Server app = new Server(9000, root);
+        Messenger wss = new Messenger(8000);
         app.setViewDir("/views/");
         app.addController("/", new MainController());
         app.addController("/auth/:action", new AuthController());
@@ -60,7 +70,9 @@ public class App {
         app.addController("/trip/:id", new TripController());
         app.addController("/location/:id", new LocationController());
         app.addController("/activity/:id", new ActivityController());
+        app.addController("/conversation/:id", new ConversationController());
         app.addStaticController("/public/");
         app.listen();
+        wss.run();
     }
 }

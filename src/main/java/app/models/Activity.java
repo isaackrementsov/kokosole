@@ -20,7 +20,7 @@ public class Activity extends Model {
         this(name, start, end, participants, locationId, UUID.randomUUID().toString());
     }
     public Activity(){ }
-    public void save(){
+    public void save(String userID){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO activities (name, start, end, location_id, uuid) values(?, ?, ?, ?, ?)");
@@ -31,16 +31,16 @@ public class Activity extends Model {
             pst.setString(5, this.id);
             pst.execute();
             pst.close();   
-            conn.close();
             for(User user : this.participants){
-                connect();
-                PreparedStatement pst2 = conn.prepareStatement("INSERT INTO activity_connections (user_id, activity_id) values(?, ?)");
-                pst2.setString(1, user.id);
+                PreparedStatement pst2 = conn.prepareStatement("INSERT IGNORE INTO activity_connections (user_email, activity_id) values(?, ?)");
+                pst2.setString(1, user.email);
                 pst2.setString(2, this.id);
                 pst2.execute();
                 pst2.close();
-                conn.close();
             }
+            conn.close();
+            Conversation conversation = new Conversation(this.name, userID, this.participants);
+            conversation.save();
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
@@ -53,24 +53,67 @@ public class Activity extends Model {
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement(
-                "UPDATE locations SET name=COALESCE(?, name),start=COALESCE(?, start),end=COALESCE(?, end)," + 
-                "zip=COALESCE(?, zip) WHERE uuid=?"
+                "UPDATE activities SET name=COALESCE(?, name),start=COALESCE(?, start),end=COALESCE(?, end) " + 
+                " WHERE uuid=?"
             );
             pst.setString(1, this.name);
             pst.setDate(2, Date.valueOf(this.duration.start));
-            pst.setDate(3, Date.valueOf(this.duration.start));
+            pst.setDate(3, Date.valueOf(this.duration.end));
             pst.setString(4, this.id);
             pst.executeUpdate();
             pst.close();
             for(User participant : this.participants){
-                PreparedStatement pst2 = conn.prepareStatement(
-                    "INSERT INTO activity_connections (user_id, activity_id) values(?,?)"
-                );
-                pst2.setString(1, participant.id);
-                pst2.setString(2, this.id);
-                pst2.execute();
-                pst2.close();
+                connect();
+                if(!participant.email.equals(User.getByID(this.getUserID(true)).email)){
+                    PreparedStatement pst2 = conn.prepareStatement(
+                        "INSERT IGNORE INTO activity_connections (user_email, activity_id) values(?,?)"
+                    );
+                    pst2.setString(1, participant.email);
+                    pst2.setString(2, this.id);
+                    pst2.execute();
+                    pst2.close();
+                }
+                conn.close();
             }
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }
+    }
+    public void delete(){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement("DELETE FROM activity_connections WHERE activity_id=?");
+            pst.setString(1, this.id);
+            pst.execute();
+            pst.close();
+            PreparedStatement pst2 = conn.prepareStatement("DELETE FROM activities WHERE uuid=?");
+            pst2.setString(1, this.id);
+            pst2.execute();
+            pst2.close();
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }  
+    }
+    public void deleteParticipant(String email){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement(
+                "DELETE FROM activity_connections WHERE user_email=? AND activity_id=? LIMIT 1"
+            );
+            pst.setString(1, email);
+            pst.setString(2, this.id);
+            pst.executeUpdate();
+            pst.close();
             conn.close();
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
@@ -119,32 +162,37 @@ public class Activity extends Model {
             return new Activity();
         }
     }
-    private static User[] getParticipants(String activityID) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM activity_connections WHERE activity_id='" + activityID + "'");
+    private static User[] getParticipants(String activityID, String userID) throws SQLException, ClassNotFoundException {
+        connect();
+        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM activity_connections WHERE activity_id='" + activityID + "'");
         ArrayList<User> users = new ArrayList<>();
         while(rs.next()){
-            String sUserID = rs.getString("user_id");
-            User user = User.getByID(sUserID);
+            String sUserEmail = rs.getString("user_email");
+            User user = User.getByEmail(sUserEmail);
             users.add(user);
         }
+        users.add(User.getByID(userID));
+        conn.close();
         User[] userArray = new User[users.size()];
         userArray = users.toArray(userArray);
         return userArray;
     }  
-    private static Activity getByResultSet(ResultSet rs) throws SQLException {
+    private static Activity getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
         if(rs.next()){
             String sName = rs.getString("name");
             Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
-            User[] sParticipants = getParticipants(sUuid);
-            Activity activity = new Activity(sName, sDuration.start, sDuration.end, sParticipants, sLocationId, sUuid);
+            Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
+            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true));
+            activity.participants = sParticipants;
             return activity;
         }else{
             return new Activity();
         }   
     }
-    public static Activity[] getActivitiesByID(String locationID) throws SQLException {
+    public static Activity[] getActivitiesByID(String locationID) throws SQLException, ClassNotFoundException {
+        connect();
         ResultSet rs = executeQuery("SELECT * FROM activities WHERE location_id='" + locationID + "'");
         ArrayList<Activity> activities = new ArrayList<>();
         while(rs.next()){
@@ -152,13 +200,41 @@ public class Activity extends Model {
             Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
-            User[] sParticipants = getParticipants(sUuid);
-            Activity activity = new Activity(sName, sDuration.start, sDuration.end, sParticipants, sLocationId, sUuid);
+            Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
+            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true));
+            activity.participants = sParticipants;
             activities.add(activity);
         }
+        conn.close();
         Activity[] activityArray = new Activity[activities.size()];
         activityArray = activities.toArray(activityArray);
         return activityArray;
+    }
+    public static Activity[] getByParticipantEmail(String email){
+        try{
+            connect();
+            PreparedStatement pst = conn.prepareStatement(
+                "SELECT activity_id FROM activity_connections WHERE user_email=?"
+            );
+            pst.setString(1, email);
+            ResultSet rs = pst.executeQuery();
+            ArrayList<Activity> activities = new ArrayList<>();
+            while(rs.next()){
+                Activity activity = Activity.getByID(rs.getString("activity_id"));
+                activities.add(activity);
+            }
+            pst.close();
+            conn.close();
+            return activities.toArray(new Activity[activities.size()]);
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+            return new Activity[0];
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+            return new Activity[0];
+        }  
     }
     public static void migrate(){
         try{
@@ -171,16 +247,16 @@ public class Activity extends Model {
                 "uuid varchar(255)," +
                 "location_id varchar(255)," +
                 "PRIMARY KEY (uuid)," +
-                "FOREIGN KEY (location_id) REFERENCES locations(uuid))" 
+                "FOREIGN KEY (location_id) REFERENCES locations(uuid));"
             );
             connect();
-            execute(
+            execute( 
                 "CREATE TABLE " +
-                "activity_connections (user_id varchar(255), " +
+                "activity_connections (user_email varchar(255), " +
                 "activity_id varchar(255), " + 
-                "FOREIGN KEY (user_id) REFERENCES users(uuid)," + 
-                "FOREIGN KEY (activity_id) REFERENCES activities(uuid))," + 
-                "UNIQUE(user_id)"
+                "FOREIGN KEY (user_email) REFERENCES users(email)," + 
+                "FOREIGN KEY (activity_id) REFERENCES activities(uuid)," + 
+                "UNIQUE(user_email, activity_id))"
             );
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);

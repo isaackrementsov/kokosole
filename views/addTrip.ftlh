@@ -3,7 +3,7 @@
         <input type="hidden" name="locations">
         <div class="profile-left">
             <div class="profile-top">
-                <i class="material-icons" style="font-size: 14vw; color: #F76D6E">terrain</i>
+                <i class="material-icons notranslate" style="font-size: 14vw; color: #F76D6E">terrain</i>
                 <h1>Add Trip</h1>
             </div>
             <div class="profile-bottom">
@@ -33,14 +33,9 @@
                             <input type="text" class="inline" name="start" placeholder="Start">  
                             <input type="text" class="inline" name="end" placeholder="End">
                         </div>    
-                        <label for="participants-name" class="label">Users</label>
+                        <label for="participants-name" class="label">Participants</label>
                         <div id="participants"></div>
                         <input type="text" name="participants" placeholder="Separate emails with ','">
-                        <div id="user-ids">
-                            <#list users as user>
-                                <input type="hidden" value="${user.id}" id="${user.email}">
-                            </#list>
-                        </div>
                         <button type="button" class="smaller navlink" style="font-weight: 400; background-color: #FFCCCD; font-size: 1.05vw; margin-top: 3vh" onclick="addActivity()">
                             Save activity
                         </button>                
@@ -93,7 +88,7 @@
                 }
             );
             locationsDiv.innerHTML += `<div class="box" value='` + town.value + `'>` + town.value + 
-            `<i class="material-icons" onclick="deleteLocation(this)">close</i></div>`;
+            `<i class="material-icons notranslate" onclick="deleteLocation(this)">close</i></div>`;
             name.value = '';
             town.value = '';
             subdivision.value = '';
@@ -112,7 +107,7 @@
                 {name: name.value, start: start.value, end: end.value, participants: p}
             );
             activities.innerHTML +=  `<div class="box" value='` + name.value + `'>` + name.value + 
-            `<i class="material-icons" onclick="deleteActivity(this)">close</i></div>`;
+            `<i class="material-icons notranslate" onclick="deleteActivity(this)">close</i></div>`;
             name.value = '';
             start.value = '';
             end.value = '';
@@ -126,15 +121,10 @@
         function addParticipant(e){
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
-                var id = document.getElementById(text);
                 participantsForm.value = '';
-                if(!id){
-                    text += ' -<span style="color: red"> invalid user</span>';
-                }else{
-                    participants.value.push({id: id.value, name: text});
-                }
+                participants.value.push(text);
                 participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
-                `<i class="material-icons" onclick="deleteParticipant(this)">close</i></div>`;
+                `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
             }
             return false;
         }
@@ -143,7 +133,7 @@
         }
         function deleteParticipant(e){
             participants.value = participants.value.filter(function(elem){
-                return elem.name != e.parentNode.getAttribute("value");
+                return elem != e.parentNode.getAttribute("value");
             });
             deleteParent(e);
         }

@@ -14,14 +14,19 @@
                         </form>
                     </#if>
                 </#if> 
+                <h2 style="color: #555; font-weight: 300">${user.email}</h2>
             </div>
             <h3>Trips</h3>
             <div class="profile-bottom" style="height: 30%; padding: 0;">
                 <#if tripLen == 0>
                     <div class="trip">
                         <#if session.id??>
-                            <h2>You have no trips yet</h2> 
-                            <a class="cta navlink outline smaller" style="width: 4.4vw" href="/trip/add">Add one</a>
+                            <#if session.id == user.id>
+                                <h2>No trips yet</h2> 
+                                <a class="cta navlink outline smaller" style="width: 4.4vw" href="/trip/add">Add one</a>
+                            <#else>
+                                <h2>No trips to show for ${user.name}</h2>                        
+                            </#if>
                         <#else>
                             <h2>No trips to show for ${user.name}</h2>                        
                         </#if>
@@ -41,18 +46,38 @@
         <div class="profile-right">
             <div class="profile-top">
                 <h1 style="display: inline-block; vertical-align: center">${user.name}</h1>
-                <h2 style="display: inline-block; margin-left: 1vw"><i class="material-icons">location_on</i>${user.country}</h2>
+                <h2 style="display: inline-block; margin-left: 1vw"><i class="material-icons notranslate">location_on</i>${user.country}</h2>
                 <#assign color="green">
                 <#if user.status == "inactive">
                     <#assign color="red">
                 </#if>
-                <h3><div class="circle" style="background-color: ${color}"></div>${user.status}</h3>
+                <h3 id="sts" onclick="opendivs([{id: 'updsts', display:'block'}, {id: 'sts', display:'block'}])">
+                    <div class="circle" style="background-color: ${color}"></div>${user.status}
+                </h3>
+                <#if session.id == user.id>
+                    <form id="updsts" method="post" action="/user/${user.id}" style="display: none">
+                        <input type="hidden" name="_method" value="PATCH">
+                        <select name="status">
+                            <option value="inactive">Inactive</option>
+                            <option value="active">Active</option>
+                        </select>
+                        <input style="display: inline" type="submit" value="Save" class="navlink outline light">
+                    </form>
+                </#if>
                 <div class="stat"><h3>${locLen}</h3><h4>Locations</h4></div>
                 <div class="stat"><h3>${tripLen}</h3><h4>Trips</h4></div><br>
-                <a class="inline" href="/messages?start-with=${user.id}">
-                    <h4><i class="material-icons">chat_bubble</i> Message</h4>
-                </a> 
-                <div class="shade inline" style="margin-left: 1vw">Beginner user</div>
+                <#if session.id??>
+                    <#if session.id != user.id>
+                        <form method="post" action="/conversation/${session.id}" class="inline" style="padding:0;margin:0">
+                            <input type="hidden" name="participants" value="['${user.email}']">
+                            <input type="hidden" name="name" value="Conversation with ${user.name}">
+                            <button class="inline shade" type="submit" style="padding:0 1vw;padding-top:1vh;background-color: transparent; border-style: hidden">
+                                <h4 style="margin:0"><i class="material-icons notranslate">chat_bubble</i> Message</h4>
+                            </button> 
+                        </form>
+                    </#if>
+                </#if>
+                <div class="shade inline" style="margin-left: 1vw;padding-top:1vh">${level}</div>
             </div>
             <div class="profile-bottom">
                 <#if session.id??>

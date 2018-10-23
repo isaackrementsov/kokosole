@@ -80,30 +80,6 @@ public class User extends Model {
             se.printStackTrace();
         }
     }
-    public static User[] getAll(){
-        try{
-            connect();
-            ResultSet rs = executeQuery("SELECT email, uuid FROM users");
-            ArrayList<User> users = new ArrayList<>();
-            while(rs.next()){
-                String sEmail = rs.getString("email");
-                String sUuid = rs.getString("uuid");
-                User user = new User(sUuid, sEmail);
-                users.add(user);
-            }
-            User[] userArray = new User[users.size()];
-            userArray = users.toArray(userArray);
-            return userArray;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-            return null;
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return null;
-        }
-    }
     public static User getByID(String uuid){
         try{
             connect();
@@ -114,11 +90,28 @@ public class User extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
+            return new User(null);
        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new User(null);
+        }
+    }
+    public static User getByEmail(String email){
+        try{
+            connect();
+            ResultSet rs = executeQuery("SELECT * FROM users WHERE email='" + email + "'");
+            User user = getByResultSet(rs);
+            conn.close();
+            return user;
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+            return new User(null);
+       }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+            return new User(null);
         }
     }
     public static User login(String email, String password){
@@ -134,11 +127,11 @@ public class User extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
+            return new User(null);
        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new User(null);
         }
     }
     public static void deleteByID(String id){
@@ -190,7 +183,7 @@ public class User extends Model {
             User user = new User(sName, sEmail, sPassword, sAvatar, sStatus, sBio, sCountry, sUuid);
             return user;
         }else{
-            return null;
+            return new User(null);
         }   
     }
 }

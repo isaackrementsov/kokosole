@@ -23,7 +23,7 @@ public class Location extends Model {
         this(town, subdivision, country, zip, activities, tripID, UUID.randomUUID().toString());
     }
     public Location(){ }
-    public void save(){
+    public void save(String userID){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO locations (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)");
@@ -37,7 +37,7 @@ public class Location extends Model {
             pst.close();   
             conn.close();
             for(Activity activity : this.activities){
-                activity.save();
+                activity.save(userID);
             }
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
@@ -69,6 +69,25 @@ public class Location extends Model {
             System.out.println("SQL error: " + se);
             se.printStackTrace();
         }
+    }
+    public void delete(){
+        try{
+            for(Activity activity : this.activities){
+                activity.delete();
+            }
+            connect();
+            PreparedStatement pst = conn.prepareStatement("DELETE FROM locations WHERE uuid=?");
+            pst.setString(1, this.id);
+            pst.execute();
+            pst.close();
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }  
     }
     public String getUserID(boolean verification){
         try{
@@ -107,7 +126,7 @@ public class Location extends Model {
             return new Location();
         }
     }
-    private static Location getByResultSet(ResultSet rs) throws SQLException {
+    private static Location getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
         if(rs.next()){
             String sTown = rs.getString("town");
             String sSubdivision = rs.getString("subdivision");
@@ -122,7 +141,8 @@ public class Location extends Model {
             return new Location();
         }  
     }
-    public static Location[] getLocationsByID(String tripID) throws SQLException{
+    public static Location[] getLocationsByID(String tripID) throws SQLException, ClassNotFoundException {
+        connect();
         ResultSet rs = executeQuery("SELECT * FROM locations WHERE trip_id='" + tripID + "'");
         ArrayList<Location> locations = new ArrayList<>();
         while(rs.next()){
@@ -136,6 +156,7 @@ public class Location extends Model {
             Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
             locations.add(location);
         }
+        conn.close();
         Location[] locationArray = new Location[locations.size()];
         locationArray = locations.toArray(locationArray);
         return locationArray;

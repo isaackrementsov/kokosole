@@ -2,12 +2,8 @@ package app.controllers;
 import app.models.*;
 import advance.Controller;
 import java.util.HashMap;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -21,20 +17,26 @@ public class TripController extends Controller {
             if(super.session.get("id") == null){
                 super.redirect("/auth/login", 302);
             }else{
-                User[] users = User.getAll();
-                HashMap<String, Object>[] usersMap = mapper.convertValue(users, HashMap[].class);
-                data.put("users", usersMap);
                 super.render("addTrip", data);
             }
         }else if(id.equals("home")){
             Trip[] trips = Trip.getByUserID((String) super.session.get("id"));
+            Activity[] activities = Activity.getByParticipantEmail((String) super.session.get("email"));
             HashMap<String, Object>[] tripsMap = mapper.convertValue(trips, HashMap[].class);
+            HashMap<String, Object>[] activitiesMap = mapper.convertValue(activities, HashMap[].class);
             data.put("trips", tripsMap);
-            super.render("tripHome", data);
+            data.put("shared", activitiesMap);
+            super.render("trips", data);
         }else{
             Trip trip = Trip.getByID(id);
+            String userID = trip.userID;
+            if(userID == null){
+                userID = "abc123";
+            }
             HashMap<String, Object> tripMap = mapper.convertValue(trip, HashMap.class);
             data.put("trip", tripMap);
+            data.put("permission", userID.equals(super.session.get("id")));
+            super.session.put("tripID", trip.id);
             super.render("trip", data);
         }
     }
@@ -47,7 +49,7 @@ public class TripController extends Controller {
             (String) super.session.get("id")
         );
         trip.locations = getLocations(jsonLocations, trip.id);
-        trip.save();
+        trip.save((String) super.session.get("userID"));
         super.redirect("/trip/" + trip.id, 302);
     }
     public void patch(){
@@ -59,6 +61,17 @@ public class TripController extends Controller {
             }
         }
         super.redirect("/trip/" + trip.id, 302);
+    }
+    public void delete(){
+        String id = super.params.get("id");
+        Trip trip = Trip.getByID(id);
+        String userID = trip.userID;
+        if(userID != null){
+            if(userID.equals(super.session.get("id"))){
+                trip.delete();    
+            }
+        }
+        super.redirect("/trip/home", 302);
     }
     public static Location[] getLocations(JSONArray jsonLocations, String tripId){
         int len = jsonLocations.length();
@@ -101,8 +114,7 @@ public class TripController extends Controller {
         int len = jsonParticipants.length();
         User[] participants = new User[len];
         for(int i = 0; i < len; i++){
-            JSONObject jsonParticipant = jsonParticipants.getJSONObject(i); 
-            User user = new User(jsonParticipant.getString("id"));
+            User user = new User(null, jsonParticipants.getString(i));
             participants[i] = user;                
         }
         return participants;

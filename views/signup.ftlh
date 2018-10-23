@@ -270,11 +270,11 @@
         </div>
         <div class="side writing">
             <h3>Meet fellow explorers</h3>
-            <i class="material-icons">near_me</i><p>Kokosole helps you meet up with people in places you intend to travel to.</p>
+            <i class="material-icons notranslate">near_me</i><p>Kokosole helps you meet up with people in places you intend to travel to.</p>
             <h3>Live chat</h3>
-            <i class="material-icons">chat</i><p>Chat with those with whom you would like to meet in real-time.</p>
+            <i class="material-icons notranslate">chat</i><p>Chat with those with whom you would like to meet in real-time.</p>
             <h3>Auto translation</h3>
-            <i class="material-icons">translate</i><p>Easily communicate with international travellers with our auto-translation feature.</p>
+            <i class="material-icons notranslate">translate</i><p>Easily communicate with international travellers with our auto-translation feature.</p>
         </div>
     </div>
 <#include "partials/footer.ftlh">

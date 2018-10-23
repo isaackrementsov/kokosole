@@ -17,4 +17,18 @@
             Kokosole can make sure that travelling women can meet with fellow explorers around the world.</p>
         <a class="button white" href="/auth/signup">GET STARTED</a>
     </div>
+    <div id="google_translate_element">
+        Would you like to translate this page?
+        <button class="blank" onclick="opendiv('google_translate_element')" id="close">No thanks</button>
+    </div>
+    <script>
+        var div;
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+            div = document.getElementsByClassName('goog-te-combo')[0];
+            div.addEventListener('input', function(){
+                opendiv('google_translate_element');
+            });
+        }
+    </script>
 <#include "partials/footer.ftlh">

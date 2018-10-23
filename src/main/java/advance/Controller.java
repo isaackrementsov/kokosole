@@ -84,7 +84,7 @@ public abstract class Controller implements HttpHandler {
             if(index == -1){
                 return null;
             }else{
-                return cookies.get(index).split("=")[1];
+                return cookies.get(index).split(";")[0].split("=")[1];
             }
         }
     }

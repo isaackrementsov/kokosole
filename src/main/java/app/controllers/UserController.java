@@ -20,11 +20,19 @@ public class UserController extends Controller {
             for(Trip trip : trips){
                 locLen += trip.locations.length;
             }
+            String level = "Beginner user";
+            if(locLen > 3){
+                level = "Intermediate user";
+            }
+            if(locLen > 6){
+                level = "Experienced user";
+            }
             data.put("user", userMap);
             data.put("trips", tripMap);
             data.put("tripLen", trips.length);
             data.put("locLen", locLen);
             data.put("session", super.session);
+            data.put("level", level);
             super.render("home", data);
         }
     }

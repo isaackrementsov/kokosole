@@ -17,7 +17,7 @@ public class Trip extends Model {
         this(name, locations, userID, UUID.randomUUID().toString());
     }
     public Trip(){ }
-    public void save(){
+    public void save(String userID){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO trips (name, user_id, uuid) values(?, ?, ?)");
@@ -28,7 +28,7 @@ public class Trip extends Model {
             pst.close();  
             conn.close();
             for(Location loc : this.locations){
-                loc.save();
+                loc.save(userID);
             } 
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
@@ -57,6 +57,25 @@ public class Trip extends Model {
             se.printStackTrace();
         }
     }
+    public void delete(){
+        try{
+            for(Location location: this.locations){
+                location.delete();
+            }
+            connect();
+            PreparedStatement pst2 = conn.prepareStatement("DELETE FROM trips WHERE uuid=?");
+            pst2.setString(1, this.id);
+            pst2.execute();
+            pst2.close();
+            conn.close();
+        }catch(ClassNotFoundException ce){
+            System.out.println("Driver error: " + ce);
+            ce.printStackTrace();
+        }catch(SQLException se){
+            System.out.println("SQL error: " + se);
+            se.printStackTrace();
+        }  
+    }
     public static Trip[] getByUserID(String userID){
         try{
             connect();
@@ -77,11 +96,11 @@ public class Trip extends Model {
         }catch(ClassNotFoundException ce){
             System.out.println("Driver error: " + ce);
             ce.printStackTrace();
-            return null;
-       }catch(SQLException se){
+            return new Trip[0];
+        }catch(SQLException se){
             System.out.println("SQL error: " + se);
             se.printStackTrace();
-            return null;
+            return new Trip[0];
         }
     }
     public static Trip getByID(String uuid){
@@ -101,7 +120,7 @@ public class Trip extends Model {
             return new Trip();
         }
     }
-    public static Trip getByResultSet(ResultSet rs) throws SQLException {
+    private static Trip getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
         if(rs.next()){
             String sName = rs.getString("name");
             String sUuid = rs.getString("uuid");

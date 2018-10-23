@@ -17,15 +17,18 @@ public class LocationController extends Controller {
             if(super.session.get("id") == null){
                 super.redirect("/login", 302);
             }else{ 
-                User[] users = User.getAll();
-                HashMap<String, Object>[] userMap = mapper.convertValue(users, HashMap[].class);
-                data.put("users", userMap);
+                data.put("tripID", super.session.get("tripID"));
                 super.render("addLoc", data);
             }
         }else{
             Location location = Location.getByID(id);
+            String userID = location.getUserID(true);
+            if(userID == null){
+                userID = "abc123";
+            }
             HashMap<String, Object> locationMap = mapper.convertValue(location, HashMap.class);
             data.put("location", locationMap);
+            data.put("permission", userID.equals(super.session.get("id")));
             super.render("location", data);
         }
     }
@@ -41,14 +44,14 @@ public class LocationController extends Controller {
             id
         );
         location.activities = TripController.getActivities(jsonActivities, location.id);
-        location.save();
+        location.save((String) super.session.get("userID"));
+        super.redirect("/location/" + location.id, 302);
     }
     public void patch(){
         String id = super.params.get("id");
         Location location = Location.getByID(id);
         Class<?> c = location.getClass();
         String userID = location.getUserID(true);
-        System.out.println(userID);
         if(userID != null){
             if(userID.equals(super.session.get("id"))){
                 for(String key : super.body.keySet()){
@@ -61,5 +64,16 @@ public class LocationController extends Controller {
             }
         }
         super.redirect("/location/" + location.id, 302);
+    }
+    public void delete(){
+        String id = super.params.get("id");
+        Location location = Location.getByID(id);
+        String userID = location.getUserID(true);
+        if(userID != null){
+            if(userID.equals(super.session.get("id"))){
+                location.delete();    
+            }
+        }
+        super.redirect("/trip/" + location.tripID, 302);
     }
 }

@@ -1,6 +1,7 @@
 var navbar = document.getElementsByClassName('navbar')[0];
 var content = document.getElementsByClassName('content')[0];
 content.style.marginTop = navbar.offsetHeight + 'px';
+var cookie = document.cookie.split(';')[1].split("=")[1];
 function opendiv(id, display){
     var div = document.getElementById(id, display);
     if(div.style.display == 'none'){
