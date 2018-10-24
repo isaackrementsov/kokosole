@@ -1,6 +1,8 @@
 package app.controllers;
 import advance.Controller;
 import app.models.*;
+
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,8 +48,23 @@ public class UserController extends Controller {
             }catch(NoSuchFieldException n){}
         }
         if(super.query.get("key") != null){
-            String[] filename = super.uploadFile("/public/", user.id, null);
-            user.avatar = filename[0];
+            System.out.println(files.length);
+            if(files != null){
+                if(files.length > 0){
+                    boolean upd = true;
+                    String filename = super.root + "/public/" + super.session.get("id") + files[0].filename;
+                    files[0].filename = filename;
+                    System.out.println(filename);
+                    try{
+                        files[0].save();
+                    }catch(IOException ioe){
+                        upd = false;
+                    }
+                    if(upd){
+                        user.avatar = filename;
+                    }
+                }
+            }
         }
         user.update();
         super.redirect("/user/" + user.id, 302);

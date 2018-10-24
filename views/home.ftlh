@@ -54,15 +54,17 @@
                 <h3 id="sts" onclick="opendivs([{id: 'updsts', display:'block'}, {id: 'sts', display:'block'}])">
                     <div class="circle" style="background-color: ${color}"></div>${user.status}
                 </h3>
-                <#if session.id == user.id>
-                    <form id="updsts" method="post" action="/user/${user.id}" style="display: none">
-                        <input type="hidden" name="_method" value="PATCH">
-                        <select name="status">
-                            <option value="inactive">Inactive</option>
-                            <option value="active">Active</option>
-                        </select>
-                        <input style="display: inline" type="submit" value="Save" class="navlink outline light">
-                    </form>
+                <#if session.id??>
+                    <#if session.id == user.id>
+                        <form id="updsts" method="post" action="/user/${user.id}" style="display: none">
+                            <input type="hidden" name="_method" value="PATCH">
+                            <select name="status">
+                                <option value="inactive">Inactive</option>
+                                <option value="active">Active</option>
+                            </select>
+                            <input style="display: inline" type="submit" value="Save" class="navlink outline light">
+                        </form>
+                    </#if>
                 </#if>
                 <div class="stat"><h3>${locLen}</h3><h4>Locations</h4></div>
                 <div class="stat"><h3>${tripLen}</h3><h4>Trips</h4></div><br>
