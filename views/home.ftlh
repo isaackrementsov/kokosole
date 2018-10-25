@@ -2,7 +2,7 @@
     <div class="profile">
         <div class="profile-left">
             <div class="profile-top">
-                <img class="profile-picture" src="/public/${user.avatar}" onclick="opendiv('avatar', 'block')"> 
+                <img class="profile-picture" src="/public/upl/${user.avatar}" onclick="opendiv('avatar', 'block')"> 
                 <#if session.id??>
                     <#if session.id == user.id>
                         <form action="/user/${user.id}?_method=PATCH&key=avatar" method="post" id="avatar" style="display: none" enctype="multipart/form-data">

@@ -1,10 +1,12 @@
 package app.controllers;
 import advance.Controller;
 import app.models.*;
-
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.UUID;
+import java.time.LocalDateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 public class UserController extends Controller {
     public void get(){
@@ -52,8 +54,13 @@ public class UserController extends Controller {
             if(files != null){
                 if(files.length > 0){
                     boolean upd = true;
-                    String filestr = super.session.get("id") + files[0].filename;
-                    String filename = super.root + "/public/" + filestr;
+                    String[] splits = files[0].filename.split("\\.");
+                    String mime = "jpg";
+                    if(splits.length > 1){
+                        mime = splits[1];
+                    }
+                    String filestr = (String) super.session.get("id") + UUID.randomUUID().toString() + "." + mime;
+                    String filename = super.root + "/public/upl/" + filestr;
                     files[0].filename = filename;
                     try{
                         files[0].save();
@@ -61,6 +68,9 @@ public class UserController extends Controller {
                         upd = false;
                     }
                     if(upd){
+                        String old = User.getByID(user.id).avatar;
+                        File oldFile = new File(super.root + "/public/upl/" + old);
+                        oldFile.delete();
                         user.avatar = filestr;
                         super.session.put("avatar", filestr);
                     }

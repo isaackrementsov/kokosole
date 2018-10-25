@@ -31,7 +31,7 @@
                     <#list conversation.participants as participant>
                         <div class="trip part">
                             <div class="av">
-                                <img class="avatar" src="/public/${participant.avatar}">
+                                <img class="avatar" src="/public/upl/${participant.avatar}">
                             </div>
                             <a class="in" href="/user/${participant.id}">
                                 <h2>

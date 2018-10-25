@@ -3,7 +3,7 @@
         <li class="left"><#include "logo.ftlh"></li>
         <li class="left"><h1><a href="/">Kokosole</a></h1></li> 
         <li><a href="/user/${session.id}" class="alink navlink">
-            <img src="/public/${session.avatar}" class="avatar">
+            <img src="/public/upl/${session.avatar}" class="avatar">
         </a></li>
         <li>
             <form method="post" action="/auth/logout" style="padding: 0; margin: 0">
