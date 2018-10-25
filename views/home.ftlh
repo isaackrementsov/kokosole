@@ -6,6 +6,7 @@
                 <#if session.id??>
                     <#if session.id == user.id>
                         <form action="/user/${user.id}?_method=PATCH&key=avatar" method="post" id="avatar" style="display: none" enctype="multipart/form-data">
+                            <input type="hidden" value="upl" name="file">
                             <label for="file">
                                 <a class="navlink outline smaller no-shadow" style="display: inline-block" required>Change</a>
                                 <input type="file" multiple name="avatar" style="display:none;" id="file">            
