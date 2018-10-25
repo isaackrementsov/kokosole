@@ -52,16 +52,17 @@ public class UserController extends Controller {
             if(files != null){
                 if(files.length > 0){
                     boolean upd = true;
-                    String filename = super.root + "/public/" + super.session.get("id") + files[0].filename;
+                    String filestr = super.session.get("id") + files[0].filename;
+                    String filename = super.root + "/public/" + filestr;
                     files[0].filename = filename;
-                    System.out.println(filename);
                     try{
                         files[0].save();
                     }catch(IOException ioe){
                         upd = false;
                     }
                     if(upd){
-                        user.avatar = filename;
+                        user.avatar = filestr;
+                        super.session.put("avatar", filestr);
                     }
                 }
             }

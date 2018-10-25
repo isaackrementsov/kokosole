@@ -5,10 +5,10 @@
                 <img class="profile-picture" src="/public/${user.avatar}" onclick="opendiv('avatar', 'block')"> 
                 <#if session.id??>
                     <#if session.id == user.id>
-                        <form action="/user/?_method=PATCH&key=avatar" method="post" id="avatar" style="display: none" enctype="multipart/form-data">
+                        <form action="/user/${user.id}?_method=PATCH&key=avatar" method="post" id="avatar" style="display: none" enctype="multipart/form-data">
                             <label for="file">
                                 <a class="navlink outline smaller no-shadow" style="display: inline-block" required>Change</a>
-                                <input type="file" name="avatar" style="display:none;" id="file">            
+                                <input type="file" multiple name="avatar" style="display:none;" id="file">            
                             </label>
                             <input style="display: inline-block" type="submit" value="Save" class="navlink cta smaller no-shadow">
                         </form>
