@@ -9,7 +9,7 @@
                             <input type="hidden" value="upl" name="file">
                             <label for="file">
                                 <a class="navlink outline smaller no-shadow" style="display: inline-block" required>Change</a>
-                                <input type="file" multiple name="avatar" style="display:none;" id="file">            
+                                <input type="file" name="avatar" style="display:none;" id="file">            
                             </label>
                             <input style="display: inline-block" type="submit" value="Save" class="navlink cta smaller no-shadow">
                         </form>
