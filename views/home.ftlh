@@ -85,7 +85,7 @@
             <div class="profile-bottom">
                 <#if session.id??>
                     <#if session.id == user.id>
-                        <form action="/user/null" method="post">
+                        <form action="/user/${user.id}" method="post">
                             <input type="hidden" name="_method" value="PATCH">
                             <#if user.bio == ''>
                                 <p id="bio" onclick="opendivs([{id: 'textarea', display: 'block'}, {id: 'edit', display: 'block'}, {id: 'bio', display: 'block'}])">
@@ -94,7 +94,7 @@
                             <#else>
                                 <p onclick="opendivs([{id: 'textarea', display: 'block'}, {id: 'edit', display: 'block'}, {id: 'bio', display: 'block'}])" id="bio">${user.bio}</p>
                             </#if>
-                            <textarea name="bio" id="textarea" style="display: none">${user.bio}</textarea>
+                            <textarea name="bio" required id="textarea" style="display: none">${user.bio}</textarea>
                             <input type="submit" class="outline cta button smaller no-shadow" value="Save" style="display:none" id="edit">
                         </form>
                     <#else>

@@ -69,7 +69,7 @@
                 <div class="location-card location-card-new" id="add-activity" style="display: none">
                     <form method="post" action="/conversation/${session.id}" class="activity-form" style="padding: 0; border-color: transparent" onsubmit="addParticipants()">
                         <label for="name" class="label">Chat name</label>
-                        <input type="text" name="name">    
+                        <input type="text" required name="name">    
                         <label for="participants" class="label">Participants</label>
                         <div id="participants"></div>
                         <input type="text" name="participants" placeholder="Separate emails with ','">
@@ -92,10 +92,12 @@
         function addParticipant(e){
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
-                participantsForm.value = '';
-                participants.push(text);
-                participantsDiv.innerHTML += `<div class="box" value="` + text + `">` + text + 
-                `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                if(text){
+                    participantsForm.value = '';
+                    participants.push(text);
+                    participantsDiv.innerHTML += `<div class="box" value="` + text + `">` + text + 
+                    `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                }
             }
             return false;
         }

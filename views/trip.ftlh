@@ -9,7 +9,7 @@
                         <#if permission>
                             <form id="upd" style="display: none" method="post" action="/trip/${trip.id}">
                                 <input type="hidden" name="_method" value="PATCH">
-                                <input type="text" name="name" value="${trip.name}">
+                                <input type="text" required name="name" value="${trip.name}">
                             </form>
                         </#if>
                     </h1>

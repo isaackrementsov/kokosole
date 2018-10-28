@@ -13,11 +13,11 @@
         <div class="side form">
             <form class="register" method="post" action="/auth/signup">
                 <label for="name">Name</label>
-                <input type="text" placeholder="Jane Smith" name="name">
+                <input type="text" required placeholder="Jane Smith" name="name">
                 <label for="email">Email</label>
-                <input type="email" placeholder="jsmith@gmail.com" name="email">
+                <input type="email" required placeholder="jsmith@gmail.com" name="email">
                 <label for="password">Password</label>
-                <input type="password" placeholder="password123" name="password">
+                <input type="password" required placeholder="password123" name="password">
                 <label for="country">Country</label>
                 <select name="country">
                     <option value="Afghanistan">Afghanistan</option>

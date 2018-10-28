@@ -7,7 +7,7 @@
                     <#if session.id == conversation.userID>
                         <form id="ttlupd" method="post" action="/conversation/${conversation.id}" style="display:none">
                             <input type="hidden" name="_method" value="PATCH">
-                            <input type="text" name="title" value="${conversation.title}">
+                            <input type="text" required name="title" value="${conversation.title}">
                         </form>
                     </#if>
                     <#if session.id == conversation.userID>
@@ -21,7 +21,7 @@
                             <h2>Add a user</h2>
                             <form class="in" method="post" action="/conversation/${conversation.id}?action=participants&sub=add" style="margin-bottom: 0">
                                 <input type="hidden" name="_method" value="PATCH">
-                                <input type="text" name="email" placeholder="Email">
+                                <input type="text" required name="email" placeholder="Email">
                                 <input type="submit" value="Add" class="outline navlink smaller light">
                             </form>
                         </div>

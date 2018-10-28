@@ -7,13 +7,13 @@
             </div>
             <div class="profile-bottom">
                 <label for="name" class="label">Town</label>
-                <input type="text" name="town">
+                <input type="text" required name="town">
                 <label for="name" class="label">Subdivision</label>
-                <input type="text" name="subdivision">
+                <input type="text" required name="subdivision">
                 <label for="name" class="label">Country</label>
-                <input type="text" name="country">
+                <input type="text" required name="country">
                 <label for="name" class="label">Postal Code</label>
-                <input type="number" name="zip" style="width: 79%; margin-bottom: 1vh">
+                <input type="number" required name="zip" style="width: 79%; margin-bottom: 1vh">
                 <input type="submit" class="smaller navlink cta" style="background-color: #F76D6E" value="Save location">
             </div>
         </div>
@@ -28,7 +28,7 @@
                     <div class="activity-form">
                         <label for="participants" class="label">Participant email</label>
                         <div id="participants"></div>
-                        <input type="text" name="participants" placeholder="Separate emails with ','">              
+                        <input type="email" name="participants" placeholder="Separate emails with ','">              
                     </div>
                 </div>
                 <div class="inline form-side aligntop">
@@ -61,16 +61,18 @@
             var start = document.getElementsByName("start")[0];
             var end = document.getElementsByName("end")[0];
             var p = participants.value;
-            activities.push(
-                {name: name.value, start: start.value, end: end.value, participants: p}
-            );
-            activitiesDiv.innerHTML +=  `<div class="box" value='` + name.value + `'>` + name.value + 
-            `<i class="material-icons notranslate" onclick="deleteActivity(this)">close</i></div>`;
-            name.value = '';
-            start.value = '';
-            end.value = '';
-            participants.value = [];
-            participants.innerHTML = '';
+            if(name && start && end){
+                activities.push(
+                    {name: name.value, start: start.value, end: end.value, participants: p}
+                );
+                activitiesDiv.innerHTML +=  `<div class="box" value='` + name.value + `'>` + name.value + 
+                `<i class="material-icons notranslate" onclick="deleteActivity(this)">close</i></div>`;
+                name.value = '';
+                start.value = '';
+                end.value = '';
+                participants.value = [];
+                participants.innerHTML = '';
+            }
         }
         function addActivities(){
             var acts = document.getElementsByName("activities")[0];
@@ -79,10 +81,12 @@
         function addParticipant(e){
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
-                participantsForm.value = '';
-                participants.value.push(text);
-                participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
-                `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                if(text){
+                    participantsForm.value = '';
+                    participants.value.push(text);
+                    participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
+                    `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                }
             }
             return false;
         }

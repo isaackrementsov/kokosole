@@ -8,7 +8,7 @@
             </div>
             <div class="profile-bottom">
                 <label for="name" class="label">Name</label>
-                <input type="text" name="name">
+                <input type="text" required name="name">
                 <p>
                     Trips are used to signify that you are travelling. 
                     Add locations and activities to join other users on your trip.
@@ -35,7 +35,7 @@
                         </div>    
                         <label for="participants-name" class="label">Participants</label>
                         <div id="participants"></div>
-                        <input type="text" name="participants" placeholder="Separate emails with ','">
+                        <input type="email" name="participants" placeholder="Separate emails with ','">
                         <button type="button" class="smaller navlink" style="font-weight: 400; background-color: #FFCCCD; font-size: 1.05vw; margin-top: 3vh" onclick="addActivity()">
                             Save activity
                         </button>                
@@ -78,24 +78,26 @@
             var subdivision = document.getElementsByName("subdivision")[0];
             var country = document.getElementsByName("country")[0];
             var zip = document.getElementsByName("zip")[0];
-            locations.push(
-                {
-                    town: town.value, 
-                    subdivision: subdivision.value, 
-                    country: country.value, 
-                    zip: parseInt(zip.value), 
-                    activities: activities.value
-                }
-            );
-            locationsDiv.innerHTML += `<div class="box" value='` + town.value + `'>` + town.value + 
-            `<i class="material-icons notranslate" onclick="deleteLocation(this)">close</i></div>`;
-            name.value = '';
-            town.value = '';
-            subdivision.value = '';
-            country.value = '';
-            zip.value = '';
-            activities.value = [];
-            activities.innerHTML = '';
+            if(town && subdivision && country && zip){
+                locations.push(
+                    {
+                        town: town.value, 
+                        subdivision: subdivision.value, 
+                        country: country.value, 
+                        zip: parseInt(zip.value), 
+                        activities: activities.value
+                    }
+                );
+                locationsDiv.innerHTML += `<div class="box" value='` + town.value + `'>` + town.value + 
+                `<i class="material-icons notranslate" onclick="deleteLocation(this)">close</i></div>`;
+                name.value = '';
+                town.value = '';
+                subdivision.value = '';
+                country.value = '';
+                zip.value = '';
+                activities.value = [];
+                activities.innerHTML = '';
+            }
         }
         function addActivity(){
             var activities = document.getElementById("activities");
@@ -103,16 +105,18 @@
             var start = document.getElementsByName("start")[0];
             var end = document.getElementsByName("end")[0];
             var p = participants.value;
-            activities.value.push(
-                {name: name.value, start: start.value, end: end.value, participants: p}
-            );
-            activities.innerHTML +=  `<div class="box" value='` + name.value + `'>` + name.value + 
-            `<i class="material-icons notranslate" onclick="deleteActivity(this)">close</i></div>`;
-            name.value = '';
-            start.value = '';
-            end.value = '';
-            participants.value = [];
-            participants.innerHTML = '';
+            if(name && start && end){
+                activities.value.push(
+                    {name: name.value, start: start.value, end: end.value, participants: p}
+                );
+                activities.innerHTML +=  `<div class="box" value='` + name.value + `'>` + name.value + 
+                `<i class="material-icons notranslate" onclick="deleteActivity(this)">close</i></div>`;
+                name.value = '';
+                start.value = '';
+                end.value = '';
+                participants.value = [];
+                participants.innerHTML = '';
+            }
         }
         function addLocations(){
             var locs = document.getElementsByName("locations")[0];
@@ -121,10 +125,12 @@
         function addParticipant(e){
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
-                participantsForm.value = '';
-                participants.value.push(text);
-                participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
-                `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                if(text){
+                    participantsForm.value = '';
+                    participants.value.push(text);
+                    participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
+                    `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                }
             }
             return false;
         }

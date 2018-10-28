@@ -9,7 +9,7 @@
                         <#if permission>
                             <form id="upd" style="display: none" method="post" action="/location/${location.id}">
                                 <input type="hidden" name="_method" value="PATCH">
-                                <input type="text" name="town" value="${location.town}">
+                                <input type="text" required name="town" value="${location.town}">
                             </form>
                         </#if>
                     </h1>
@@ -27,8 +27,8 @@
                             <h2>${location.country}</h2>
                         </div>
                         <div id="info" style="display: none">
-                            <input type="text" name="subdivision" value="${location.subdivision}">
-                            <input type="text" name="country" value="${location.country}">
+                            <input type="text" required name="subdivision" value="${location.subdivision}">
+                            <input type="text" required name="country" value="${location.country}">
                             <input type="submit" value="Save" class="navlink outline dte-button">
                         </div>
                         <#if permission>
@@ -78,8 +78,8 @@
                                 </div>
                                 <#if permission>
                                     <div id="dates" style="display: none">
-                                        <input class="dte" type="text" value="${startSlash}" name="start">
-                                        <input class="dte" type="text" value="${endSlash}" name="end">
+                                        <input class="dte" type="text" required value="${startSlash}" name="start">
+                                        <input class="dte" type="text" required value="${endSlash}" name="end">
                                         <input type="submit" value="Save" class="navlink outline dte-button">
                                     </div>
                                 </#if>
@@ -163,10 +163,12 @@
             function addParticipant(e){
                 if(e.keyCode == 188){
                     var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
-                    participantsForm.value = '';
-                    participants.push(text);
-                    participantsDiv.innerHTML += `<div class="box" value="` + text + `">` + text + 
-                    `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                    if(text){
+                        participantsForm.value = '';
+                        participants.push(text);
+                        participantsDiv.innerHTML += `<div class="box" value="` + text + `">` + text + 
+                        `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
+                    }
                 }
                 return false;
             }

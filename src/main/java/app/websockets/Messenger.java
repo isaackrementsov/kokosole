@@ -7,10 +7,13 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import advance.Server;
 import app.models.Message;
+//import com.google.cloud.translate.*;
 public class Messenger extends WebSocketServer {
+    //private Translate translate;
     public static WebSocketStore connections = new WebSocketStore();
     public Messenger(int port){
         super(new InetSocketAddress(port));
+        //this.translate = TranslateOptions.getDefaultInstance().getService();
     }
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake){
@@ -25,13 +28,17 @@ public class Messenger extends WebSocketServer {
     }
     @Override
     public void onMessage(WebSocket conn, String message){
-        HashMap<String, Object> sess = connections.get(conn);
-        String conversationID = (String) sess.get("conversationID");
-        String userEmail = (String) sess.get("email");
-        LocalDateTime sentAt = LocalDateTime.now();
-        connections.sendByConversationID(conversationID, message + "|" + userEmail + "|" + sentAt);
-        Message msg = new Message(message, userEmail, conversationID, sentAt);
-        msg.save();
+        //Translation translation = translate.translate(message);
+        //message = translation.getTranslatedText();
+        if(!message.equals("")){
+            HashMap<String, Object> sess = connections.get(conn);
+            String conversationID = (String) sess.get("conversationID");
+            String userEmail = (String) sess.get("email");
+            LocalDateTime sentAt = LocalDateTime.now();
+            connections.sendByConversationID(conversationID, message + "|" + userEmail + "|" + sentAt);
+            Message msg = new Message(message, userEmail, conversationID, sentAt);
+            msg.save();
+        }
     }   
     @Override
     public void onError(WebSocket conn, Exception ex){
