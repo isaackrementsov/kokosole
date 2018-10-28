@@ -164,11 +164,11 @@
                 if(e.keyCode == 188){
                     var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
                     if(text){
-                        participantsForm.value = '';
                         participants.push(text);
                         participantsDiv.innerHTML += `<div class="box" value="` + text + `">` + text + 
                         `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
                     }
+                    participantsForm.value = '';
                 }
                 return false;
             }

@@ -61,7 +61,7 @@
             var start = document.getElementsByName("start")[0];
             var end = document.getElementsByName("end")[0];
             var p = participants.value;
-            if(name && start && end){
+            if(name.value && start.value && end.value){
                 activities.push(
                     {name: name.value, start: start.value, end: end.value, participants: p}
                 );
@@ -82,11 +82,11 @@
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
                 if(text){
-                    participantsForm.value = '';
                     participants.value.push(text);
                     participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
                     `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
                 }
+                participantsForm.value = '';
             }
             return false;
         }

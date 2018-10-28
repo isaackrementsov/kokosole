@@ -78,7 +78,7 @@
             var subdivision = document.getElementsByName("subdivision")[0];
             var country = document.getElementsByName("country")[0];
             var zip = document.getElementsByName("zip")[0];
-            if(town && subdivision && country && zip){
+            if(town.value && subdivision.value && country.value && zip.value){
                 locations.push(
                     {
                         town: town.value, 
@@ -105,7 +105,7 @@
             var start = document.getElementsByName("start")[0];
             var end = document.getElementsByName("end")[0];
             var p = participants.value;
-            if(name && start && end){
+            if(name.value && start.value && end.value){
                 activities.value.push(
                     {name: name.value, start: start.value, end: end.value, participants: p}
                 );
@@ -126,11 +126,11 @@
             if(e.keyCode == 188){
                 var text = participantsForm.value.slice(0, participantsForm.value.length - 1).trim().toLowerCase();
                 if(text){
-                    participantsForm.value = '';
                     participants.value.push(text);
                     participants.innerHTML += `<div class="box" value='` + text + `'>` + text + 
                     `<i class="material-icons notranslate" onclick="deleteParticipant(this)">close</i></div>`;
                 }
+                participantsForm.value = '';
             }
             return false;
         }

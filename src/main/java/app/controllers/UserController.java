@@ -50,7 +50,6 @@ public class UserController extends Controller {
             }catch(NoSuchFieldException n){}
         }
         if(super.query.get("key") != null){
-            System.out.println(files.length);
             if(files != null){
                 if(files.length > 0){
                     boolean upd = true;
@@ -59,20 +58,22 @@ public class UserController extends Controller {
                     if(splits.length > 1){
                         mime = splits[1];
                     }
-                    String filestr = (String) super.session.get("id") + UUID.randomUUID().toString() + "." + mime;
-                    String filename = super.root + "/public/upl/" + filestr;
-                    files[0].filename = filename;
-                    try{
-                        files[0].save();
-                    }catch(IOException ioe){
-                        upd = false;
-                    }
-                    if(upd){
-                        String old = User.getByID(user.id).avatar;
-                        File oldFile = new File(super.root + "/public/upl/" + old);
-                        oldFile.delete();
-                        user.avatar = filestr;
-                        super.session.put("avatar", filestr);
+                    if(mime.matches("jpg|png|svg|bmp")){
+                        String filestr = (String) super.session.get("id") + UUID.randomUUID().toString() + "." + mime;
+                        String filename = super.root + "/public/upl/" + filestr;
+                        files[0].filename = filename;
+                        try{
+                            files[0].save();
+                        }catch(IOException ioe){
+                            upd = false;
+                        }
+                        if(upd){
+                            String old = User.getByID(user.id).avatar;
+                            File oldFile = new File(super.root + "/public/upl/" + old);
+                            oldFile.delete();
+                            user.avatar = filestr;
+                            super.session.put("avatar", filestr);
+                        }
                     }
                 }
             }
