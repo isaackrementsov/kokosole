@@ -5,7 +5,6 @@ import javax.sql.PooledConnection;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 public abstract class Model {
-    public static String CONNECTION_STRING = "jdbc:mysql://localhost/kokosole?autoReconnect=true&useSSL=false";
     public static String USERNAME = "root";
     public static String PASSWORD = "password123";
     protected static MysqlConnectionPoolDataSource ds = new MysqlConnectionPoolDataSource();

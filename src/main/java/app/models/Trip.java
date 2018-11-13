@@ -73,12 +73,7 @@ public class Trip extends Model {
             ResultSet rs = executeQuery("SELECT * FROM trips WHERE user_id='" + userID + "'");
             ArrayList<Trip> trips = new ArrayList<>();
             while(rs.next()){
-                String sName = rs.getString("name");
-                String sUuid = rs.getString("uuid");
-                String sUserID = rs.getString("user_id");
-                Location[] sLocations = Location.getLocationsByID(sUuid);
-                Trip trip = new Trip(sName, sLocations, sUserID, sUuid);
-                trips.add(trip);
+                trips.add(getByResultSet(rs));
             }
             Trip[] tripArray = new Trip[trips.size()];
             tripArray = trips.toArray(tripArray);
@@ -94,7 +89,10 @@ public class Trip extends Model {
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM trips WHERE uuid='" + uuid + "'");
-            Trip trip = getByResultSet(rs);
+            Trip trip = new Trip();
+            if(rs.next()){
+                trip = getByResultSet(rs);
+            }
             return trip;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -104,16 +102,12 @@ public class Trip extends Model {
         }
     }
     private static Trip getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
-        if(rs.next()){
-            String sName = rs.getString("name");
-            String sUuid = rs.getString("uuid");
-            String sUserID = rs.getString("user_id");
-            Location[] sLocations = Location.getLocationsByID(sUuid);
-            Trip trip = new Trip(sName, sLocations, sUserID, sUuid);
-            return trip;
-        }else{
-            return new Trip();
-        }  
+        String sName = rs.getString("name");
+        String sUuid = rs.getString("uuid");
+        String sUserID = rs.getString("user_id");
+        Location[] sLocations = Location.getLocationsByID(sUuid);
+        Trip trip = new Trip(sName, sLocations, sUserID, sUuid);
+        return trip; 
     }
     public static void migrate(){
         try{

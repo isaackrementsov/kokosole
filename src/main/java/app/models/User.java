@@ -78,7 +78,10 @@ public class User extends Model {
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM users WHERE uuid='" + uuid + "'");
-            User user = getByResultSet(rs);
+            User user = new User(null);
+            if(rs.next()){
+                user = getByResultSet(rs);
+            }
             return user;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -94,7 +97,10 @@ public class User extends Model {
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM users WHERE email='" + email + "'");
-            User user = getByResultSet(rs);
+            User user = new User(null);
+            if(rs.next()){
+                user = getByResultSet(rs);
+            }
             return user;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -113,7 +119,10 @@ public class User extends Model {
             pst.setString(1, email);
             pst.setString(2, password);
             ResultSet rs = pst.executeQuery();
-            User user = getByResultSet(rs);
+            User user = new User(null);
+            if(rs.next()){
+                user = getByResultSet(rs);
+            }
             return user;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -155,19 +164,15 @@ public class User extends Model {
         }
     }
     private static User getByResultSet(ResultSet rs) throws SQLException {
-        if(rs.next()){
-            String sUuid = rs.getString("uuid");
-            String sName = rs.getString("name");
-            String sEmail = rs.getString("email");
-            String sPassword = rs.getString("pwd");
-            String sAvatar = rs.getString("avatar");
-            String sStatus = rs.getString("sts");
-            String sBio = rs.getString("bio");
-            String sCountry = rs.getString("country");
-            User user = new User(sName, sEmail, sPassword, sAvatar, sStatus, sBio, sCountry, sUuid);
-            return user;
-        }else{
-            return new User(null);
-        }   
+        String sUuid = rs.getString("uuid");
+        String sName = rs.getString("name");
+        String sEmail = rs.getString("email");
+        String sPassword = rs.getString("pwd");
+        String sAvatar = rs.getString("avatar");
+        String sStatus = rs.getString("sts");
+        String sBio = rs.getString("bio");
+        String sCountry = rs.getString("country");
+        User user = new User(sName, sEmail, sPassword, sAvatar, sStatus, sBio, sCountry, sUuid);
+        return user;  
     }
 }

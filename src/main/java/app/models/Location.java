@@ -111,7 +111,10 @@ public class Location extends Model {
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM locations WHERE uuid='" + uuid + "'");
-            Location location = getByResultSet(rs);
+            Location location = new Location();
+            if(rs.next()){
+                location = getByResultSet(rs);
+            }
             return location;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -124,33 +127,21 @@ public class Location extends Model {
     }
     public static Location getByID(String uuid){return getByID(uuid, false);}
     private static Location getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
-        if(rs.next()){
-            String sTown = rs.getString("town");
-            String sSubdivision = rs.getString("subdivision");
-            String sCountry = rs.getString("country");
-            String sUuid = rs.getString("uuid");
-            String sTripID = rs.getString("trip_id");
-            Activity[] sActivities = Activity.getActivitiesByID(sUuid);
-            int sZip = rs.getInt("zip");
-            Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
-            return location;
-        }else{
-            return new Location();
-        }  
+        String sTown = rs.getString("town");
+        String sSubdivision = rs.getString("subdivision");
+        String sCountry = rs.getString("country");
+        String sUuid = rs.getString("uuid");
+        String sTripID = rs.getString("trip_id");
+        Activity[] sActivities = Activity.getActivitiesByID(sUuid);
+        int sZip = rs.getInt("zip");
+        Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
+        return location; 
     }
     public static Location[] getLocationsByID(String tripID) throws SQLException, ClassNotFoundException {
         ResultSet rs = executeQuery("SELECT * FROM locations WHERE trip_id='" + tripID + "'");
         ArrayList<Location> locations = new ArrayList<>();
         while(rs.next()){
-            String sTown = rs.getString("town");
-            String sSubdivision = rs.getString("subdivision");
-            String sCountry = rs.getString("country");
-            String sUuid = rs.getString("uuid");
-            String sTripID = rs.getString("trip_id");
-            Activity[] sActivities = Activity.getActivitiesByID(sUuid);
-            int sZip = rs.getInt("zip");
-            Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
-            locations.add(location);
+            locations.add(getByResultSet(rs));
         }
         Location[] locationArray = new Location[locations.size()];
         locationArray = locations.toArray(locationArray);

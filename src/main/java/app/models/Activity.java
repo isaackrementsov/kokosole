@@ -140,7 +140,10 @@ public class Activity extends Model {
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM activities WHERE uuid='" + uuid + "'");
-            Activity activity = getByResultSet(rs);
+            Activity activity = new Activity();
+            if(rs.next()){
+                activity = getByResultSet(rs);
+            }
             return activity;
         }catch(ClassNotFoundException | SQLException e){
             handleException(e);
@@ -168,31 +171,20 @@ public class Activity extends Model {
         return userArray;
     }  
     private static Activity getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
-        if(rs.next()){
-            String sName = rs.getString("name");
-            Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
-            String sUuid = rs.getString("uuid");
-            String sLocationId = rs.getString("location_id");
-            Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
-            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true, true));
-            activity.participants = sParticipants;
-            return activity;
-        }else{
-            return new Activity();
-        }   
+        String sName = rs.getString("name");
+        Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
+        String sUuid = rs.getString("uuid");
+        String sLocationId = rs.getString("location_id");
+        Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
+        User[] sParticipants = getParticipants(sUuid, activity.getUserID(true, true));
+        activity.participants = sParticipants;
+        return activity; 
     }
     public static Activity[] getActivitiesByID(String locationID) throws SQLException, ClassNotFoundException {
         ResultSet rs = executeQuery("SELECT * FROM activities WHERE location_id='" + locationID + "'");
         ArrayList<Activity> activities = new ArrayList<>();
         while(rs.next()){
-            String sName = rs.getString("name");
-            Duration sDuration = new Duration(rs.getDate("start"), rs.getDate("end"));
-            String sUuid = rs.getString("uuid");
-            String sLocationId = rs.getString("location_id");
-            Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
-            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true, true));
-            activity.participants = sParticipants;
-            activities.add(activity);
+            activities.add(getByResultSet(rs));
         }
         Activity[] activityArray = new Activity[activities.size()];
         activityArray = activities.toArray(activityArray);
