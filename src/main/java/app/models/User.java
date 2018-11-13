@@ -45,13 +45,10 @@ public class User extends Model {
             pst.setString(8, this.country);
             pst.execute();
             pst.close();   
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public void update(){
@@ -71,49 +68,44 @@ public class User extends Model {
             pst.setString(8, this.id);
             pst.executeUpdate();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public static User getByID(String uuid){
+    public static User getByID(String uuid, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM users WHERE uuid='" + uuid + "'");
             User user = getByResultSet(rs);
-            conn.close();
             return user;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new User(null);
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new User(null);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
-    public static User getByEmail(String email){
+    public static User getByID(String uuid){return getByID(uuid, false);}
+    public static User getByEmail(String email, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM users WHERE email='" + email + "'");
             User user = getByResultSet(rs);
-            conn.close();
             return user;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new User(null);
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new User(null);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public static User getByEmail(String email){return getByEmail(email, false);}
     public static User login(String email, String password){
         try{
             connect();
@@ -122,28 +114,22 @@ public class User extends Model {
             pst.setString(2, password);
             ResultSet rs = pst.executeQuery();
             User user = getByResultSet(rs);
-            conn.close();
             return user;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new User(null);
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new User(null);
+        }finally{
+            disconnect();
         }
     }
     public static void deleteByID(String id){
         try{
             connect();
             execute("DELETE FROM users WHERE id='" + id + "'");
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public static void migrate(){
@@ -162,12 +148,10 @@ public class User extends Model {
                 "PRIMARY KEY (uuid)," +
                 "UNIQUE(email))"
             );
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     private static User getByResultSet(ResultSet rs) throws SQLException {

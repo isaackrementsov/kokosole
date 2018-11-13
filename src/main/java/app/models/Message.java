@@ -1,6 +1,6 @@
 package app.models;
 import java.sql.*;
-import java.time.LocalDateTime;;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.ArrayList;
 public class Message extends Model {
@@ -32,16 +32,13 @@ public class Message extends Model {
             pst.setString(5, this.id);
             pst.execute();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public static Message[] getByConversationID(String conversationID){
+    public static Message[] getByConversationID(String conversationID, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("SELECT * FROM messages WHERE conversation_id=? ORDER BY sent_at ASC");
@@ -57,18 +54,17 @@ public class Message extends Model {
                 messages.add(new Message(sContent, sUserEmail, sConversationID, sSentAt, uuid));
             }
             pst.close();
-            conn.close();
             return messages.toArray(new Message[messages.size()]);
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Message[0];
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Message[0];
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public static Message[] getByConversationID(String conversationID){return getByConversationID(conversationID, false);}
     public static void migrate(){
         try{
             connect();

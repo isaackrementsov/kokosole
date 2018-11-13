@@ -17,7 +17,7 @@ public class Conversation extends Model {
         this(title, userID, participants, UUID.randomUUID().toString());
     }
     public Conversation(){ }
-    public void save(){
+    public void save(boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO conversations (title, user_id, uuid) values(?, ?, ?)");
@@ -35,15 +35,15 @@ public class Conversation extends Model {
                 pst2.execute();
                 pst2.close();
             }
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public void save(){this.save(false);}
     public void update(){
         try{
             connect();
@@ -53,8 +53,7 @@ public class Conversation extends Model {
             pst.execute();
             pst.close();
             for(User user : this.participants){
-                if(!user.email.equals(User.getByID(this.userID).email)){
-                    connect();
+                if(!user.email.equals(User.getByID(this.userID, true).email)){
                     PreparedStatement pst2 = conn.prepareStatement(
                         "INSERT IGNORE INTO conversation_connections (user_email, conversation_id) values(?, ?)"
                     );
@@ -62,16 +61,12 @@ public class Conversation extends Model {
                     pst2.setString(2, this.id);
                     pst2.execute();
                     pst2.close();
-                    conn.close();
                 }
             }
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public void delete(){
@@ -89,13 +84,10 @@ public class Conversation extends Model {
             pst3.setString(1, this.id);
             pst3.execute();
             pst3.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public void deleteParticipant(String email){
@@ -108,16 +100,13 @@ public class Conversation extends Model {
             pst.setString(2, this.id);
             pst.executeUpdate();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public static Conversation[] getByUserID(String id){
+    public static Conversation[] getByUserID(String id, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("SELECT * FROM conversations WHERE user_id=?");
@@ -127,21 +116,19 @@ public class Conversation extends Model {
             while(rs.next()){
                 conversations.add(getByResultSet(rs));
             }
-            Conversation[] conversationArray = conversations.toArray(new Conversation[conversations.size()]);
             pst.close();
-            conn.close();
-            return conversationArray;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+            return conversations.toArray(new Conversation[conversations.size()]);
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Conversation[0];
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Conversation[0];
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
-    public static Conversation[] getByParticipantEmail(String email){
+    public static Conversation[] getByUserID(String id){return getByUserID(id, false);}
+    public static Conversation[] getByParticipantEmail(String email, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement(
@@ -151,23 +138,22 @@ public class Conversation extends Model {
             ResultSet rs = pst.executeQuery();
             ArrayList<Conversation> conversations = new ArrayList<>();
             while(rs.next()){
-                Conversation conversation = Conversation.getByID(rs.getString("conversation_id"));
+                Conversation conversation = Conversation.getByID(rs.getString("conversation_id"), true);
                 conversations.add(conversation);
             }
             pst.close();
-            conn.close();
             return conversations.toArray(new Conversation[conversations.size()]);
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Conversation[0];
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Conversation[0];
-        }  
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
+        } 
     }
-    public static Conversation getByID(String id){
+    public static Conversation[] getByParticipantEmail(String email){return getByParticipantEmail(email, false);}
+    public static Conversation getByID(String id, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("SELECT * FROM conversations WHERE uuid=?");
@@ -178,20 +164,18 @@ public class Conversation extends Model {
                 conversation = getByResultSet(rs);
             }
             pst.close();
-            conn.close();
             return conversation;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Conversation();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Conversation();
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public static Conversation getByID(String id){return getByID(id, false);}
     private static Conversation getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
-        connect();
         String sTitle = rs.getString("title");
         String sUserID = rs.getString("user_id");
         String uuid = rs.getString("uuid");
@@ -201,12 +185,11 @@ public class Conversation extends Model {
         ArrayList<User> users = new ArrayList<>();
         while(rs2.next()){
             String sEmail = rs2.getString("user_email");
-            users.add(User.getByEmail(sEmail));
+            users.add(User.getByEmail(sEmail, true));
         }
-        users.add(User.getByID(sUserID));
+        users.add(User.getByID(sUserID, true));
         pst2.close();
         User[] participants = users.toArray(new User[users.size()]);
-        conn.close();
         return new Conversation(sTitle, sUserID, participants, uuid);
     }
     public static void migrate(){

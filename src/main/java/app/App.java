@@ -61,6 +61,7 @@ public class App {
                     break;
             }
         }
+        Model.init();
         Server app = new Server(9000, root);
         Messenger wss = new Messenger(8000);
         app.setViewDir("/views/");

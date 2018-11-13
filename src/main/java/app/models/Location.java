@@ -23,7 +23,7 @@ public class Location extends Model {
         this(town, subdivision, country, zip, activities, tripID, UUID.randomUUID().toString());
     }
     public Location(){ }
-    public void save(String userID){
+    public void save(String userID, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO locations (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)");
@@ -35,18 +35,18 @@ public class Location extends Model {
             pst.setString(6, this.id);
             pst.execute();
             pst.close();   
-            conn.close();
             for(Activity activity : this.activities){
-                activity.save(userID);
+                activity.save(userID, true);
             }
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public void save(String userID){save(userID, false);}
     public void update(){
         try{
             connect();
@@ -61,35 +61,32 @@ public class Location extends Model {
             pst.setString(5, this.id);
             pst.executeUpdate();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public void delete(){
+    public void delete(boolean isChain){
         try{
-            for(Activity activity : this.activities){
-                activity.delete();
-            }
             connect();
+            for(Activity activity : this.activities){
+                activity.delete(true);
+            }
             PreparedStatement pst = conn.prepareStatement("DELETE FROM locations WHERE uuid=?");
             pst.setString(1, this.id);
             pst.execute();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }  
     }
-    public String getUserID(boolean verification){
+    public void delete(){delete(false);}
+    public String getUserID(boolean verification, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery("SELECT user_id FROM trips WHERE uuid='" + this.tripID + "'");
@@ -97,35 +94,33 @@ public class Location extends Model {
             if(rs.next()){
                 id = rs.getString("user_id");
             }
-            conn.close();
             return id;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-            return null;
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return null;
-        }   
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+            return "";
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
+        }  
     }
-    public static Location getByID(String uuid){
+    public String getUserID(boolean verification){return this.getUserID(verification, false);}
+    public static Location getByID(String uuid, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM locations WHERE uuid='" + uuid + "'");
             Location location = getByResultSet(rs);
-            conn.close();
             return location;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Location();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Location();
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public static Location getByID(String uuid){return getByID(uuid, false);}
     private static Location getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
         if(rs.next()){
             String sTown = rs.getString("town");
@@ -142,7 +137,6 @@ public class Location extends Model {
         }  
     }
     public static Location[] getLocationsByID(String tripID) throws SQLException, ClassNotFoundException {
-        connect();
         ResultSet rs = executeQuery("SELECT * FROM locations WHERE trip_id='" + tripID + "'");
         ArrayList<Location> locations = new ArrayList<>();
         while(rs.next()){
@@ -156,7 +150,6 @@ public class Location extends Model {
             Location location = new Location(sTown, sSubdivision, sCountry, sZip, sActivities, sTripID, sUuid);
             locations.add(location);
         }
-        conn.close();
         Location[] locationArray = new Location[locations.size()];
         locationArray = locations.toArray(locationArray);
         return locationArray;
@@ -175,12 +168,10 @@ public class Location extends Model {
                 "PRIMARY KEY (uuid)," +
                 "FOREIGN KEY (trip_id) REFERENCES trips(uuid))"
             );
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
 }

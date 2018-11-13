@@ -26,16 +26,13 @@ public class Trip extends Model {
             pst.setString(3, this.id);
             pst.execute();
             pst.close();  
-            conn.close();
             for(Location loc : this.locations){
-                loc.save(userID);
+                loc.save(userID, true);
             } 
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public void update(){
@@ -48,33 +45,27 @@ public class Trip extends Model {
             pst.setString(2, this.id);
             pst.executeUpdate();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
     public void delete(){
         try{
             for(Location location: this.locations){
-                location.delete();
+                location.delete(true);
             }
             connect();
             PreparedStatement pst2 = conn.prepareStatement("DELETE FROM trips WHERE uuid=?");
             pst2.setString(1, this.id);
             pst2.execute();
             pst2.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-        }  
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
+        } 
     }
     public static Trip[] getByUserID(String userID){
         try{
@@ -89,18 +80,14 @@ public class Trip extends Model {
                 Trip trip = new Trip(sName, sLocations, sUserID, sUuid);
                 trips.add(trip);
             }
-            conn.close();
             Trip[] tripArray = new Trip[trips.size()];
             tripArray = trips.toArray(tripArray);
             return tripArray;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Trip[0];
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Trip[0];
+        }finally{
+            disconnect();
         }
     }
     public static Trip getByID(String uuid){
@@ -108,16 +95,12 @@ public class Trip extends Model {
             connect();
             ResultSet rs = executeQuery("SELECT * FROM trips WHERE uuid='" + uuid + "'");
             Trip trip = getByResultSet(rs);
-            conn.close();
             return trip;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Trip();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Trip();
+        }finally{
+            disconnect();
         }
     }
     private static Trip getByResultSet(ResultSet rs) throws SQLException, ClassNotFoundException {
@@ -143,12 +126,10 @@ public class Trip extends Model {
                 "PRIMARY KEY (uuid)," +
                 "FOREIGN KEY (user_id) REFERENCES users(uuid))"
             );
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
 }

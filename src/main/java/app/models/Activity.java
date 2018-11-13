@@ -20,7 +20,7 @@ public class Activity extends Model {
         this(name, start, end, participants, locationId, UUID.randomUUID().toString());
     }
     public Activity(){ }
-    public void save(String userID){
+    public void save(String userID, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("INSERT INTO activities (name, start, end, location_id, uuid) values(?, ?, ?, ?, ?)");
@@ -38,17 +38,17 @@ public class Activity extends Model {
                 pst2.execute();
                 pst2.close();
             }
-            conn.close();
             Conversation conversation = new Conversation(this.name, userID, this.participants);
-            conversation.save();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+            conversation.save(true);
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public void save(String userID){this.save(userID, false);}
     public void update(){
         try{
             connect();
@@ -63,8 +63,7 @@ public class Activity extends Model {
             pst.executeUpdate();
             pst.close();
             for(User participant : this.participants){
-                connect();
-                if(!participant.email.equals(User.getByID(this.getUserID(true)).email)){
+                if(!participant.email.equals(User.getByID(this.getUserID(true, true), true).email)){
                     PreparedStatement pst2 = conn.prepareStatement(
                         "INSERT IGNORE INTO activity_connections (user_email, activity_id) values(?,?)"
                     );
@@ -73,18 +72,14 @@ public class Activity extends Model {
                     pst2.execute();
                     pst2.close();
                 }
-                conn.close();
             }
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public void delete(){
+    public void delete(boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement("DELETE FROM activity_connections WHERE activity_id=?");
@@ -95,15 +90,15 @@ public class Activity extends Model {
             pst2.setString(1, this.id);
             pst2.execute();
             pst2.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-        }  
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
+        }
     }
+    public void delete(){this.delete(false);}
     public void deleteParticipant(String email){
         try{
             connect();
@@ -114,16 +109,13 @@ public class Activity extends Model {
             pst.setString(2, this.id);
             pst.executeUpdate();
             pst.close();
-            conn.close();
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
-    public String getUserID(boolean verification){
+    public String getUserID(boolean verification, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery(
@@ -133,46 +125,44 @@ public class Activity extends Model {
             if(rs.next()){
                 id = rs.getString("user_id");
             }
-            conn.close();
             return id;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-            return null;
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return null;
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+            return "";
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }   
     }
-    public static Activity getByID(String uuid){
+    public String getUserID(boolean verification){return this.getUserID(verification, false);}
+    public static Activity getByID(String uuid, boolean isChain){
         try{
             connect();
             ResultSet rs = executeQuery("SELECT * FROM activities WHERE uuid='" + uuid + "'");
             Activity activity = getByResultSet(rs);
-            conn.close();
             return activity;
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Activity();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Activity();
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
         }
     }
+    public static Activity getByID(String uuid){return getByID(uuid, false);}
     private static User[] getParticipants(String activityID, String userID) throws SQLException, ClassNotFoundException {
-        connect();
-        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM activity_connections WHERE activity_id='" + activityID + "'");
+        ResultSet rs = conn.createStatement().executeQuery(
+            "SELECT * FROM activity_connections WHERE activity_id='" + activityID + "'"
+        );
         ArrayList<User> users = new ArrayList<>();
         while(rs.next()){
             String sUserEmail = rs.getString("user_email");
-            User user = User.getByEmail(sUserEmail);
+            User user = User.getByEmail(sUserEmail, true);
             users.add(user);
         }
-        users.add(User.getByID(userID));
-        conn.close();
+        users.add(User.getByID(userID, true));
         User[] userArray = new User[users.size()];
         userArray = users.toArray(userArray);
         return userArray;
@@ -184,7 +174,7 @@ public class Activity extends Model {
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
             Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
-            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true));
+            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true, true));
             activity.participants = sParticipants;
             return activity;
         }else{
@@ -192,7 +182,6 @@ public class Activity extends Model {
         }   
     }
     public static Activity[] getActivitiesByID(String locationID) throws SQLException, ClassNotFoundException {
-        connect();
         ResultSet rs = executeQuery("SELECT * FROM activities WHERE location_id='" + locationID + "'");
         ArrayList<Activity> activities = new ArrayList<>();
         while(rs.next()){
@@ -201,16 +190,15 @@ public class Activity extends Model {
             String sUuid = rs.getString("uuid");
             String sLocationId = rs.getString("location_id");
             Activity activity = new Activity(sName, sDuration.start, sDuration.end, null, sLocationId, sUuid);
-            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true));
+            User[] sParticipants = getParticipants(sUuid, activity.getUserID(true, true));
             activity.participants = sParticipants;
             activities.add(activity);
         }
-        conn.close();
         Activity[] activityArray = new Activity[activities.size()];
         activityArray = activities.toArray(activityArray);
         return activityArray;
     }
-    public static Activity[] getByParticipantEmail(String email){
+    public static Activity[] getByParticipantEmail(String email, boolean isChain){
         try{
             connect();
             PreparedStatement pst = conn.prepareStatement(
@@ -220,22 +208,21 @@ public class Activity extends Model {
             ResultSet rs = pst.executeQuery();
             ArrayList<Activity> activities = new ArrayList<>();
             while(rs.next()){
-                Activity activity = Activity.getByID(rs.getString("activity_id"));
+                Activity activity = Activity.getByID(rs.getString("activity_id"), true);
                 activities.add(activity);
             }
             pst.close();
-            conn.close();
             return activities.toArray(new Activity[activities.size()]);
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
             return new Activity[0];
-        }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
-            return new Activity[0];
-        }  
+        }finally{
+            if(!isChain){
+                disconnect();
+            }
+        } 
     }
+    public static Activity[] getByParticipantEmail(String email){return getByParticipantEmail(email, false);}
     public static void migrate(){
         try{
             connect();
@@ -249,7 +236,6 @@ public class Activity extends Model {
                 "PRIMARY KEY (uuid)," +
                 "FOREIGN KEY (location_id) REFERENCES locations(uuid));"
             );
-            connect();
             execute( 
                 "CREATE TABLE " +
                 "activity_connections (user_email varchar(255), " +
@@ -258,12 +244,10 @@ public class Activity extends Model {
                 "FOREIGN KEY (activity_id) REFERENCES activities(uuid)," + 
                 "UNIQUE(user_email, activity_id))"
             );
-        }catch(ClassNotFoundException ce){
-            System.out.println("Driver error: " + ce);
-            ce.printStackTrace();
-       }catch(SQLException se){
-            System.out.println("SQL error: " + se);
-            se.printStackTrace();
+        }catch(ClassNotFoundException | SQLException e){
+            handleException(e);
+        }finally{
+            disconnect();
         }
     }
 }
