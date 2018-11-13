@@ -26,7 +26,9 @@ public class Location extends Model {
     public void save(String userID, boolean isChain){
         try{
             connect();
-            PreparedStatement pst = conn.prepareStatement("INSERT INTO locations (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)");
+            PreparedStatement pst = conn.prepareStatement(
+                "INSERT INTO locations (town, subdivision, country, zip, trip_id, uuid) values(?, ?, ?, ?, ?, ?)"
+            );
             pst.setString(1, this.town);
             pst.setString(2, this.subdivision);
             pst.setString(3, this.country);

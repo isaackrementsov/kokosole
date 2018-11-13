@@ -49,7 +49,7 @@ public class TripController extends Controller {
             (String) super.session.get("id")
         );
         trip.locations = getLocations(jsonLocations, trip.id);
-        trip.save((String) super.session.get("userID"));
+        trip.save((String) super.session.get("id"));
         super.redirect("/trip/" + trip.id, 302);
     }
     public void patch(){
